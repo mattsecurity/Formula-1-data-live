@@ -68,16 +68,3 @@ export function teamColor(team: string | null | undefined, apiColour: string | n
 /** Points for finishing positions (Grand Prix and Sprint). */
 export const RACE_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 export const SPRINT_POINTS = [8, 7, 6, 5, 4, 3, 2, 1];
-
-export const COUNTRY_FLAGS: Record<string, string> = {
-  BRN: '🇧🇭', BHR: '🇧🇭', KSA: '🇸🇦', SAU: '🇸🇦', AUS: '🇦🇺', JPN: '🇯🇵', CHN: '🇨🇳', USA: '🇺🇸', ITA: '🇮🇹',
-  MON: '🇲🇨', MCO: '🇲🇨', ESP: '🇪🇸', CAN: '🇨🇦', AUT: '🇦🇹', GBR: '🇬🇧', HUN: '🇭🇺', BEL: '🇧🇪', NED: '🇳🇱',
-  NLD: '🇳🇱', AZE: '🇦🇿', SGP: '🇸🇬', MEX: '🇲🇽', BRA: '🇧🇷', QAT: '🇶🇦', UAE: '🇦🇪', ARE: '🇦🇪', FRA: '🇫🇷',
-  GER: '🇩🇪', DEU: '🇩🇪', FIN: '🇫🇮', DEN: '🇩🇰', DNK: '🇩🇰', THA: '🇹🇭', NZL: '🇳🇿', ARG: '🇦🇷', CHE: '🇨🇭',
-  SUI: '🇨🇭', POL: '🇵🇱', POR: '🇵🇹', RUS: '🇷🇺', SWE: '🇸🇪', IRL: '🇮🇪', EST: '🇪🇪', IND: '🇮🇳', ISR: '🇮🇱',
-  MAR: '🇲🇦', RSA: '🇿🇦', ZAF: '🇿🇦',
-};
-
-export function flagFor(code?: string | null): string {
-  return (code && COUNTRY_FLAGS[code.toUpperCase()]) || '🏁';
-}

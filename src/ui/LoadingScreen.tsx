@@ -62,7 +62,9 @@ export function LoadingScreen({
         </>
       ) : (
         <div style={{ textAlign: 'center', maxWidth: 460, display: 'grid', gap: 14, justifyItems: 'center' }}>
-          <div style={{ fontSize: 44 }}>🏁</div>
+          <span style={{ display: 'grid', placeItems: 'center', width: 52, height: 52, borderRadius: 16, background: 'rgba(255,159,10,0.12)', color: 'var(--orange)' }}>
+            <Icon name="info" size={24} />
+          </span>
           <h1 className="title-md" style={{ margin: 0 }}>Non è stato possibile caricare la sessione</h1>
           <p className="muted" style={{ margin: 0 }}>{error.message}</p>
           <p className="dim" style={{ margin: 0, fontSize: 13 }}>
