@@ -66,10 +66,15 @@ export function buildReference(
     y: sm.y,
     s,
     length,
-    rotation: opts.rotation ?? principalRotation(sm.x, sm.y),
+    rotation: opts.rotation ?? bestFitRotation(sm.x, sm.y),
     corners: [],
     drs: [],
     sectors: null,
+    unitsPerMeter: 10,
+    lengthM: length / 10,
+    speed: null,
+    pitLane: null,
+    grid: [],
   };
 }
 
@@ -99,6 +104,38 @@ export function principalRotation(xs: ArrayLike<number>, ys: ArrayLike<number>):
   }
   const angle = 0.5 * Math.atan2(2 * sxy, sxx - syy);
   return (-angle * 180) / Math.PI;
+}
+
+/**
+ * Rotation (degrees) that lets the circuit fill a landscape viewport best,
+ * used when the official TV orientation is unavailable.
+ */
+export function bestFitRotation(xs: ArrayLike<number>, ys: ArrayLike<number>, aspect = 1.45): number {
+  let best = 0;
+  let bestScale = -Infinity;
+  for (let deg = 0; deg < 180; deg += 2) {
+    const a = (deg * Math.PI) / 180;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < xs.length; i += 3) {
+      const x = xs[i] * c - ys[i] * s;
+      const y = xs[i] * s + ys[i] * c;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const scale = Math.min(aspect / (maxX - minX), 1 / (maxY - minY));
+    if (scale > bestScale + 1e-12) {
+      bestScale = scale;
+      best = deg;
+    }
+  }
+  return best;
 }
 
 /** Closest vertex search. `hint` enables a fast local search. */

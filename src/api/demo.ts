@@ -2,7 +2,9 @@
 // same shape as OpenF1, so every screen can be explored without network.
 
 import type { DataSource, GetOptions } from './openf1';
-import type { Filter } from './types';
+import type { Filter, RawCircuitInfo, RawDriver } from './types';
+import { circuitById } from '../data/circuits';
+import { OpenF1Source } from './openf1';
 
 const DEMO_YEAR = 2025;
 export const DEMO_MEETING_KEY = 990001;
@@ -49,11 +51,13 @@ function rng(seed: number) {
 }
 
 // ----------------------------------------------------------------- circuit
-const CONTROL: [number, number][] = [
-  [0, 0], [450, 0], [900, 0], [1120, 30], [1190, 150], [1120, 270], [930, 320], [720, 330], [600, 420],
-  [640, 560], [800, 640], [1050, 700], [1300, 780], [1420, 930], [1340, 1080], [1150, 1100], [950, 1010],
-  [700, 960], [430, 1040], [220, 1010], [100, 880], [40, 700], [-90, 580], [-230, 500], [-300, 330],
-  [-240, 150], [-120, 30],
+// The demo runs on the real Autodromo Nazionale Monza layout.
+const MONZA = circuitById('it-1922')!;
+const MONZA_PTS: [number, number][] = [];
+for (let i = 0; i < MONZA.pts.length; i += 2) MONZA_PTS.push([MONZA.pts[i], MONZA.pts[i + 1]]);
+// official turn numbers at outline indices of the dataset
+const MONZA_CORNERS: [string, number][] = [
+  ['1', 5], ['2', 9], ['3', 22], ['4', 34], ['5', 36], ['6', 51], ['7', 58], ['8', 76], ['9', 81], ['10', 88], ['11', 105],
 ];
 
 function catmullClosed(pts: [number, number][], perSeg: number) {
@@ -89,7 +93,7 @@ interface Circuit {
 }
 
 function buildCircuit(): Circuit {
-  const raw = catmullClosed(CONTROL, 40);
+  const raw = catmullClosed(MONZA_PTS, 12);
   // resample every ~4 m
   const cum = [0];
   for (let i = 1; i <= raw.length; i++) {
@@ -97,8 +101,8 @@ function buildCircuit(): Circuit {
     const b = raw[i % raw.length];
     cum.push(cum[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1]));
   }
-  const L = cum[cum.length - 1] * 1.6; // scale the layout up to a ~5.5 km lap
-  const scale = 1.6;
+  const L = cum[cum.length - 1];
+  const scale = 1;
   const n = Math.round(L / 4);
   const ds = L / n;
   const x = new Float64Array(n);
@@ -133,7 +137,7 @@ function buildCircuit(): Circuit {
     const by = y[q] - y[i];
     const cross = Math.abs(ax * by - ay * bx);
     const k = (2 * cross) / ((Math.hypot(ax, ay) * Math.hypot(bx, by) * Math.hypot(x[q] - x[p], y[q] - y[p])) || 1);
-    vLat[i] = Math.min(92, Math.sqrt(38 / Math.max(k, 1e-5)));
+    vLat[i] = Math.min(95, Math.sqrt(52 / Math.max(k, 1e-5)));
   }
   // forward/backward passes for traction & braking limits
   const v = Float64Array.from(vLat);
@@ -141,13 +145,13 @@ function buildCircuit(): Circuit {
     for (let i = 1; i < n * 2; i++) {
       const a = (i - 1) % n;
       const b = i % n;
-      const acc = 13 * Math.max(0.15, 1 - v[a] / 100);
+      const acc = 16 * Math.max(0.15, 1 - v[a] / 102);
       v[b] = Math.min(v[b], Math.sqrt(v[a] * v[a] + 2 * acc * ds));
     }
     for (let i = n * 2; i > 0; i--) {
       const a = i % n;
       const b = (i - 1) % n;
-      v[b] = Math.min(v[b], Math.sqrt(v[a] * v[a] + 2 * 42 * ds));
+      v[b] = Math.min(v[b], Math.sqrt(v[a] * v[a] + 2 * 48 * ds));
     }
   }
   // DRS on the two longest flat-out stretches
@@ -197,6 +201,17 @@ function sampleCircuit(c: Circuit, s: number) {
 function inDrs(c: Circuit, s: number) {
   const f = (((s % c.L) + c.L) % c.L) / c.L;
   return c.drs.some(([a, b]) => f >= a && f <= b);
+}
+
+/** Plausible mini-sector colours (yellow / green / purple, pit on out laps). */
+function demoSegments(rand: () => number, pitOut: boolean) {
+  const seg = (n: number, first: boolean) =>
+    Array.from({ length: n }, (_, i) => {
+      if (pitOut && first && i < 3) return 2064;
+      const r = rand();
+      return r < 0.06 ? 2051 : r < 0.36 ? 2049 : 2048;
+    });
+  return { segments_sector_1: seg(8, true), segments_sector_2: seg(9, false), segments_sector_3: seg(8, false) };
 }
 
 function gearFor(kmh: number) {
@@ -354,7 +369,7 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
       }
       if (t < car.stopUntil) vt = 0;
       // dynamics
-      if (vt > car.v) car.v = Math.min(vt, car.v + 13 * Math.max(0.15, 1 - car.v / 100) * dt * (car.lap === 0 ? 0.9 : 1));
+      if (vt > car.v) car.v = Math.min(vt, car.v + 16 * Math.max(0.15, 1 - car.v / 102) * dt * (car.lap === 0 ? 0.9 : 1));
       else car.v = Math.max(vt, car.v - 42 * dt);
       const prevS = car.s;
       car.s += car.v * dt;
@@ -381,6 +396,7 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
             lap_duration: +dur.toFixed(3), duration_sector_1: s1 && +s1.toFixed(3), duration_sector_2: s2 && +s2.toFixed(3),
             duration_sector_3: s3 && +s3.toFixed(3), is_pit_out_lap: car.stint > 0 && car.stintStartLap === car.lap,
             i1_speed: Math.round(280 + rand() * 30), i2_speed: Math.round(250 + rand() * 30), st_speed: Math.round(300 + rand() * 25),
+            ...demoSegments(rand, car.stint > 0 && car.stintStartLap === car.lap),
           });
         }
         car.sectorT = [];
@@ -540,7 +556,7 @@ function simulateQuali(c: Circuit): Record<string, Row[]> {
         while (s < lapEndS) {
           const sm = sampleCircuit(c, s);
           const vt = factor === 1 ? sm.v / pushPace : Math.min(sm.v, 60) * factor + 8;
-          if (vt > v) v = Math.min(vt, v + 13 * Math.max(0.15, 1 - v / 100) * 0.05);
+          if (vt > v) v = Math.min(vt, v + 16 * Math.max(0.15, 1 - v / 102) * 0.05);
           else v = Math.max(vt, v - 42 * 0.05);
           const prev = s;
           s += v * 0.05;
@@ -557,7 +573,7 @@ function simulateQuali(c: Circuit): Record<string, Row[]> {
         }
         const dur = t - lapStart;
         const [a, b] = sectorTimes;
-        out.laps.push({ ...base, driver_number: num, lap_number: lapNo, date_start: isoAt(T0 + lapStart * 1000), lap_duration: +dur.toFixed(3), duration_sector_1: a ? +(a - lapStart).toFixed(3) : null, duration_sector_2: a && b ? +(b - a).toFixed(3) : null, duration_sector_3: b ? +(t - b).toFixed(3) : null, is_pit_out_lap: k === 0, i1_speed: 290, i2_speed: 260, st_speed: 310 });
+        out.laps.push({ ...base, driver_number: num, lap_number: lapNo, date_start: isoAt(T0 + lapStart * 1000), lap_duration: +dur.toFixed(3), duration_sector_1: a ? +(a - lapStart).toFixed(3) : null, duration_sector_2: a && b ? +(b - a).toFixed(3) : null, duration_sector_3: b ? +(t - b).toFixed(3) : null, is_pit_out_lap: k === 0, i1_speed: 290, i2_speed: 260, st_speed: 310, ...demoSegments(rand, k === 0) });
         if (factor === 1) best.set(num, Math.min(best.get(num) ?? Infinity, dur));
       });
     }
@@ -578,8 +594,8 @@ function getDb(): DemoDb {
 }
 
 const meeting = {
-  meeting_key: DEMO_MEETING_KEY, meeting_name: 'Demo Grand Prix', meeting_official_name: 'PITWALL DEMO GRAND PRIX — SIMULAZIONE',
-  location: 'Circuito Demo', country_name: 'Italia', country_code: 'ITA', circuit_short_name: 'Demo Ring', circuit_type: 'Permanent',
+  meeting_key: DEMO_MEETING_KEY, meeting_name: 'Italian Grand Prix · Demo', meeting_official_name: 'SIMULAZIONE OFFLINE — AUTODROMO NAZIONALE MONZA',
+  location: 'Monza', country_name: 'Italy', country_code: 'ITA', circuit_short_name: 'Monza', circuit_type: 'Permanent',
   date_start: isoAt(QUALI_START - 86_400_000), date_end: isoAt(RACE_START + 7_200_000), gmt_offset: '02:00:00', year: DEMO_YEAR, is_cancelled: false,
 };
 const sessions = [
@@ -610,8 +626,32 @@ function compare(a: unknown, op: string, b: unknown): boolean {
   }
 }
 
+let headshots: Promise<Map<number, string>> | null = null;
+/** Real driver portraits from the latest OpenF1 session, when online. */
+function realHeadshots(): Promise<Map<number, string>> {
+  if (!headshots) {
+    const src = new OpenF1Source();
+    headshots = Promise.race([
+      src
+        .get<RawDriver>('drivers', [['session_key', '=', 'latest']], { cacheMs: 86_400_000 })
+        .then((rows) => new Map(rows.filter((r) => r.headshot_url).map((r) => [r.driver_number, r.headshot_url!]))),
+      new Promise<Map<number, string>>((resolve) => setTimeout(() => resolve(new Map()), 6000)),
+    ]).catch(() => new Map());
+  }
+  return headshots;
+}
+
 export class DemoSource implements DataSource {
   readonly id = 'demo';
+
+  async circuitInfo(): Promise<RawCircuitInfo> {
+    return {
+      corners: MONZA_CORNERS.map(([num, idx]) => ({
+        number: Number(num),
+        trackPosition: { x: Math.round(MONZA_PTS[idx][0] * 10), y: Math.round(MONZA_PTS[idx][1] * 10) },
+      })),
+    };
+  }
 
   async get<T>(endpoint: string, filters: Filter[] = [], _opts: GetOptions = {}): Promise<T[]> {
     void _opts;
@@ -621,9 +661,10 @@ export class DemoSource implements DataSource {
     if (endpoint === 'meetings') rows = [meeting];
     else if (endpoint === 'sessions') rows = sessions;
     else if (endpoint === 'drivers') {
+      const shots = await realHeadshots();
       rows = DRIVERS.map(([num, code, first, last, team, colour, cc]) => ({
         driver_number: num, name_acronym: code, first_name: first, last_name: last, full_name: `${first} ${last.toUpperCase()}`,
-        broadcast_name: `${first[0]} ${last.toUpperCase()}`, team_name: team, team_colour: colour, headshot_url: null, country_code: cc,
+        broadcast_name: `${first[0]} ${last.toUpperCase()}`, team_name: team, team_colour: colour, headshot_url: shots.get(num) ?? null, country_code: cc,
         session_key: sessionKey, meeting_key: DEMO_MEETING_KEY,
       }));
     } else if (endpoint === 'championship_drivers' || endpoint === 'championship_teams') rows = [];

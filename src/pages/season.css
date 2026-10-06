@@ -9,23 +9,24 @@
 .mgrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 .mcard {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 18px 20px 20px;
-  min-height: 250px;
+  padding: 16px 18px 18px;
+  min-height: 268px;
   overflow: hidden;
-  transition: transform 0.35s var(--spring), box-shadow 0.3s ease, background-color 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s var(--ease);
 }
 .mcard:hover {
   background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 20px 40px -20px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  transform: translateY(-2px);
 }
 .mcard.status-next {
-  box-shadow: inset 0 0 0 1.5px rgba(255, 69, 58, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 .mcard-top {
   display: flex;
@@ -33,80 +34,82 @@
   align-items: center;
 }
 .mcard-round {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 650;
   color: var(--text-3);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 .mcard-status {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--text-2);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }
 .mcard-status.s-live {
-  background: rgba(255, 69, 58, 0.2);
-  color: #ff8a80;
+  color: var(--red);
 }
 .mcard-status.s-next {
-  background: rgba(255, 159, 10, 0.18);
-  color: #ffc46b;
+  color: var(--text);
 }
 .mcard-circuit {
-  height: 96px;
-  margin: 10px 0 6px;
+  height: 120px;
+  margin: 8px 0 10px;
   display: grid;
   place-items: center;
 }
+.mcard-circuit svg {
+  width: 100%;
+  height: 120px;
+  transition: transform 0.6s var(--ease);
+}
+.mcard:hover .mcard-circuit svg {
+  transform: scale(1.04);
+}
 .mcard-circuit img {
-  max-height: 96px;
+  max-height: 110px;
   max-width: 80%;
   object-fit: contain;
   opacity: 0.85;
-  filter: invert(1) brightness(1.6) contrast(1.2);
+  filter: invert(1) brightness(1.6);
   mix-blend-mode: screen;
 }
-.mcard-flag {
-  font-size: 24px;
-  line-height: 1;
+.mcard-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.mcard-chip {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-2);
 }
 .mcard h3 {
   margin: 8px 0 4px;
-  font-size: 18px;
-  letter-spacing: -0.02em;
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
 }
 .mcard p {
   margin: 0;
-  font-size: 13.5px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-3);
 }
-.mcard-chip {
+.mcard-len {
   position: absolute;
-  bottom: 18px;
+  top: 44px;
   right: 18px;
-  background: rgba(255, 159, 10, 0.16);
-  color: #ffc46b;
-}
-
-.mcard:hover .mcard-circuit img {
-  transform: scale(1.08) rotate(-2deg);
-  opacity: 1;
-}
-.mcard-circuit img {
-  transition: transform 0.6s var(--spring), opacity 0.3s ease;
-}
-.mcard.status-next::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.5);
-  animation: ringPulse 2.2s ease-out infinite;
-  pointer-events: none;
-}
-@keyframes ringPulse {
-  to {
-    box-shadow: 0 0 0 14px rgba(255, 69, 58, 0);
-  }
+  font-size: 10.5px;
+  color: var(--text-3);
 }

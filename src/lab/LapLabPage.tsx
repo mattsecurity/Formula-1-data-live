@@ -4,8 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { sourceForSession } from '../data/sources';
 import { fastestLap } from '../model/analysis';
 import { loadCarWindow, type CarTelemetry } from '../model/carData';
-import { flagFor } from '../model/constants';
-import { projectS, rotatedBounds } from '../model/geometry';
+import { pointAtFraction, projectS, rotatedBounds } from '../model/geometry';
 import { bisect, carAt } from '../model/interp';
 import { fmtLapTime } from '../model/standings';
 import type { Lap, SessionData } from '../model/types';
@@ -114,7 +113,7 @@ function timeAtDist(tr: LapTrace, d: number): number {
   return tr.time[i] + (tr.time[i + 1] - tr.time[i]) * u;
 }
 
-function MiniMap({ data, traces, tau }: { data: SessionData; traces: LapTrace[]; tau: number }) {
+function MiniMap({ data, traces, tau, cursorFrac }: { data: SessionData; traces: LapTrace[]; tau: number; cursorFrac: number | null }) {
   const ref = useRef<HTMLCanvasElement>(null);
   // dominance: which trace is quickest through each of 30 mini-sectors (by lap fraction)
   const dominance = useMemo(() => {
@@ -190,6 +189,29 @@ function MiniMap({ data, traces, tau }: { data: SessionData; traces: LapTrace[];
     ctx.beginPath();
     ctx.arc(sx, sy, 3, 0, Math.PI * 2);
     ctx.fill();
+    // chart cursor position
+    if (cursorFrac != null) {
+      const q = pointAtFraction(r, cursorFrac);
+      const [x, y] = P(q.x, q.y);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 9, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    // corner numbers
+    ctx.font = '600 9px -apple-system, "Inter Variable", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const c of r.corners) {
+      const [x, y] = P(c.x, c.y);
+      ctx.fillStyle = 'rgba(20,20,26,0.9)';
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(235,235,245,0.75)';
+      ctx.fillText(c.num, x, y + 0.5);
+    }
     // ghost cars
     for (const tr of traces) {
       const t = tr.lap.start! + Math.min(tau, tr.lap.dur!);
@@ -207,7 +229,7 @@ function MiniMap({ data, traces, tau }: { data: SessionData; traces: LapTrace[];
       ctx.fillStyle = '#fff';
       ctx.fillText(tr.code, x + 10, y - 8);
     }
-  }, [data, traces, tau, dominance]);
+  }, [data, traces, tau, dominance, cursorFrac]);
 
   return <canvas ref={ref} className="lab-map" aria-label="Mappa del giro con le auto fantasma e i mini-settori più veloci" />;
 }
@@ -238,6 +260,7 @@ function LapLab({ data }: { data: SessionData }) {
   const { traces, loading, error } = useTraces(data, picks);
   const [tau, setTau] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [cursor, setCursor] = useState<number | null>(null);
   const maxDur = Math.max(1, ...traces.map((t) => t.lap.dur!));
 
   useEffect(() => {
@@ -291,7 +314,21 @@ function LapLab({ data }: { data: SessionData }) {
     });
   }, [traces]);
 
-  const marker = traces[0] ? traces[0].dist[Math.max(0, bisect(traces[0].time, tau))] : undefined;
+  const marker = traces[0] && tau > 0 ? traces[0].dist[Math.max(0, bisect(traces[0].time, tau))] : undefined;
+  const lapLen = traces[0] ? traces[0].dist[traces[0].dist.length - 1] : data.ref.lengthM;
+  const cornerMarks = useMemo(
+    () =>
+      data.ref.corners.map((c) => ({ x: (projectS(data.ref, c.x, c.y).s / data.ref.length) * lapLen, label: `T${c.num}` })),
+    [data, lapLen],
+  );
+  const sync = { cursorX: cursor, onCursor: setCursor, markers: cornerMarks, hideTip: true };
+  const readout =
+    cursor == null
+      ? null
+      : traces.map((t) => {
+          const i = Math.max(0, Math.min(t.dist.length - 1, bisect(t.dist, cursor)));
+          return { t, speed: t.tel.speed[i], thr: t.tel.throttle[i], brk: t.tel.brake[i], gear: t.tel.gear[i], time: timeAtDist(t, cursor) };
+        });
   const fmtM = (v: number) => `${Math.round(v)} m`;
 
   return (
@@ -302,7 +339,7 @@ function LapLab({ data }: { data: SessionData }) {
         </Link>
         <div>
           <div className="eyebrow">
-            {flagFor(data.meta.countryCode)} {data.meta.meetingName} {data.meta.year} · {data.meta.name}
+            {data.meta.meetingName} {data.meta.year} · {data.meta.name}
           </div>
           <h1 className="title-md" style={{ margin: 0 }}>
             Lap Lab
@@ -316,7 +353,7 @@ function LapLab({ data }: { data: SessionData }) {
 
       <section className="lab-top">
         <div className="lab-map-card card">
-          <MiniMap data={data} traces={traces} tau={tau} />
+          <MiniMap data={data} traces={traces} tau={tau} cursorFrac={cursor != null && lapLen ? cursor / lapLen : null} />
           <div className="lab-ghost">
             <button className="icon-btn" onClick={() => (tau >= maxDur ? (setTau(0), setPlaying(true)) : setPlaying((p) => !p))} aria-label={playing ? 'Pausa' : 'Avvia confronto'}>
               <Icon name={playing ? 'pause' : 'play'} />
@@ -380,34 +417,55 @@ function LapLab({ data }: { data: SessionData }) {
               </span>
             ))}
           </div>
+          <div className="lab-readout card" aria-live="polite">
+            {readout ? (
+              <>
+                <span className="label">A {Math.round(cursor!)} m</span>
+                {readout.map((r) => (
+                  <div key={r.t.pick.driver} className="lab-ro" style={{ ['--c' as string]: r.t.color }}>
+                    <b>{r.t.code}</b>
+                    <span className="num">{Math.round(r.speed)} km/h</span>
+                    <span className="num">M{r.gear}</span>
+                    <span className="num">Gas {r.thr}%</span>
+                    <span className={r.brk ? 'brk on' : 'brk'}>Freno</span>
+                    <span className="num dim">{fmtLapTime(r.time)}</span>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <span className="dim" style={{ fontSize: 12.5 }}>
+                Passa il cursore sui grafici per leggere i valori nello stesso punto del giro. Le linee verticali indicano le curve.
+              </span>
+            )}
+          </div>
           {delta.length > 0 && (
             <div className="card lab-chart">
               <h3>Delta tempo <span className="dim">rispetto a {traces[0].code} — sopra lo zero è più lento</span></h3>
-              <LineChart series={delta} height={180} xFormat={fmtM} yFormat={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}s`} marker={marker} />
+              <LineChart series={delta} height={180} xFormat={fmtM} yFormat={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}s`} marker={marker} {...sync} />
             </div>
           )}
           <div className="card lab-chart">
             <h3>Velocità <span className="dim">km/h</span></h3>
-            <LineChart series={chart((t, i) => t.tel.speed[i])} height={240} xFormat={fmtM} yFormat={(v) => `${Math.round(v)}`} marker={marker} />
+            <LineChart series={chart((t, i) => t.tel.speed[i])} height={240} xFormat={fmtM} yFormat={(v) => `${Math.round(v)}`} marker={marker} {...sync} />
           </div>
           <div className="lab-split">
             <div className="card lab-chart">
               <h3>Acceleratore <span className="dim">%</span></h3>
-              <LineChart series={chart((t, i) => t.tel.throttle[i])} height={160} yDomain={[-5, 105]} xFormat={fmtM} yFormat={(v) => `${Math.round(v)}`} marker={marker} />
+              <LineChart series={chart((t, i) => t.tel.throttle[i])} height={160} yDomain={[-5, 105]} xFormat={fmtM} yFormat={(v) => `${Math.round(v)}`} marker={marker} {...sync} />
             </div>
             <div className="card lab-chart">
               <h3>Freno</h3>
-              <LineChart series={chart((t, i) => (t.tel.brake[i] ? 1 : 0))} height={160} yDomain={[-0.1, 1.1]} yTicks={[0, 1]} xFormat={fmtM} yFormat={(v) => (v > 0.5 ? 'ON' : 'OFF')} marker={marker} step />
+              <LineChart series={chart((t, i) => (t.tel.brake[i] ? 1 : 0))} height={160} yDomain={[-0.1, 1.1]} yTicks={[0, 1]} xFormat={fmtM} yFormat={(v) => (v > 0.5 ? 'ON' : 'OFF')} marker={marker} step {...sync} />
             </div>
           </div>
           <div className="lab-split">
             <div className="card lab-chart">
               <h3>Marcia</h3>
-              <LineChart series={chart((t, i) => t.tel.gear[i])} height={160} yDomain={[0.5, 8.5]} yTicks={[1, 2, 3, 4, 5, 6, 7, 8]} xFormat={fmtM} yFormat={(v) => `${Math.round(v)}`} marker={marker} step />
+              <LineChart series={chart((t, i) => t.tel.gear[i])} height={160} yDomain={[0.5, 8.5]} yTicks={[1, 2, 3, 4, 5, 6, 7, 8]} xFormat={fmtM} yFormat={(v) => `${Math.round(v)}`} marker={marker} step {...sync} />
             </div>
             <div className="card lab-chart">
               <h3>Giri motore <span className="dim">rpm</span></h3>
-              <LineChart series={chart((t, i) => t.tel.rpm[i])} height={160} xFormat={fmtM} yFormat={(v) => `${(v / 1000).toFixed(0)}k`} marker={marker} />
+              <LineChart series={chart((t, i) => t.tel.rpm[i])} height={160} xFormat={fmtM} yFormat={(v) => `${(v / 1000).toFixed(0)}k`} marker={marker} {...sync} />
             </div>
           </div>
         </motion.section>

@@ -4,9 +4,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { DEMO_RACE_KEY } from '../api/demo';
 import { currentYear, getChampionship, getDrivers, latestCompletedSession, seasons } from '../data/sources';
 import { useAsync } from '../data/useAsync';
-import { flagFor } from '../model/constants';
 import type { Driver } from '../model/types';
-import { CarArt } from '../ui/CarArt';
+import { Flag } from '../ui/Flag';
+import { Portrait } from '../ui/Portrait';
+import { TopCar } from '../ui/TopCar';
 import { ErrorCard } from '../ui/ErrorCard';
 import { Headshot } from '../ui/Headshot';
 import { Icon } from '../ui/Icon';
@@ -20,7 +21,7 @@ interface Champ {
 }
 
 function DriverCard({ d, champ, onOpen, i }: { d: Driver; champ?: Champ; onOpen: () => void; i: number }) {
-  const tilt = useTilt(10);
+  const tilt = useTilt(4);
   return (
     <motion.button
       className="dcard"
@@ -28,49 +29,33 @@ function DriverCard({ d, champ, onOpen, i }: { d: Driver; champ?: Champ; onOpen:
       style={{ ['--team' as string]: d.color, ...tilt.style }}
       onPointerMove={tilt.onPointerMove}
       onPointerLeave={tilt.onPointerLeave}
-      whileTap={{ scale: 0.97 }}
-      initial={{ opacity: 0, y: 18 }}
+      whileTap={{ scale: 0.98 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: Math.min(i, 16) * 0.03, ease: [0.32, 0.72, 0, 1] }}
+      transition={{ duration: 0.55, delay: Math.min(i, 16) * 0.03, ease: [0.32, 0.72, 0, 1] }}
       aria-label={`${d.full}, ${d.team}`}
     >
-      <motion.span className="sheen" style={{ background: tilt.sheen }} />
-      <span className="dcard-num" aria-hidden>
+      <span className="dcard-num num" aria-hidden>
         {d.num}
       </span>
-      <div className="dcard-photo">
-        {d.headshot ? (
-          <Headshot driver={d} size={150} ring={false} />
-        ) : (
-          <Headshot driver={d} size={110} ring={false} />
-        )}
-      </div>
+      <Portrait driver={d} className="dcard-photo" />
       <div className="dcard-info">
+        <div className="dcard-meta">
+          <Flag code={d.country} />
+          {champ && <span className="num">P{champ.pos} · {champ.points} pt</span>}
+        </div>
         <span className="dcard-first">{d.first}</span>
-        <span className="dcard-last">{d.last}</span>
-        <span className="dcard-team">
-          {flagFor(d.country)} {d.team}
-        </span>
+        <span className="dcard-last">{d.last.toUpperCase()}</span>
+        <span className="dcard-team">{d.team}</span>
       </div>
-      {champ && (
-        <span className="dcard-pts tabular">
-          P{champ.pos} · {champ.points} pt
-        </span>
-      )}
     </motion.button>
   );
 }
 
-function DrivingCar({ color, number, team }: { color: string; number: number; team: string }) {
-  const [moving, setMoving] = useState(true);
+function DrivingCar({ color, team }: { color: string; team: string }) {
   return (
-    <motion.div
-      initial={{ x: '-110%', skewX: 10 }}
-      animate={{ x: 0, skewX: 0 }}
-      transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-      onAnimationComplete={() => setMoving(false)}
-    >
-      <CarArt color={color} number={number} className="dsheet-car" spinning={moving} title={`Monoposto ${team}`} />
+    <motion.div initial={{ x: '-40%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}>
+      <TopCar color={color} className="dsheet-car" title={`Monoposto ${team}`} />
     </motion.div>
   );
 }
@@ -95,18 +80,18 @@ function DriverSheet({ d, champ, sessionKey, onClose }: { d: Driver; champ?: Cha
         </button>
         <div className="dsheet-hero">
           <span className="dsheet-num">{d.num}</span>
-          <Headshot driver={d} size={160} />
+          <Portrait driver={d} className="dsheet-photo" />
           <div>
             <div className="eyebrow">{d.team}</div>
             <h2 className="title-lg" style={{ margin: '6px 0' }}>
-              {d.first} <span style={{ color: d.color }}>{d.last}</span>
+              {d.first} <b>{d.last.toUpperCase()}</b>
             </h2>
             <div className="muted">
-              {flagFor(d.country)} {d.country ?? ''} · #{d.num} · {d.code}
+              <Flag code={d.country} /> · #{d.num} · {d.code}
             </div>
           </div>
         </div>
-        <DrivingCar color={d.color} number={d.num} team={d.team} />
+        <DrivingCar color={d.color} team={d.team} />
         <div className="dsheet-stats">
           <div>
             <span className="dim">Mondiale</span>
@@ -199,7 +184,7 @@ export default function DriversPage() {
                 <span className="dim tabular">{t.drivers.reduce((a, d) => a + (champ.get(d.num)?.points ?? 0), 0)} pt</span>
               </div>
               <motion.div initial={{ x: -80, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 + i * 0.04 }}>
-                <CarArt color={t.drivers[0].color} number={t.drivers[0].num} className="tcard-car" title={`Monoposto ${t.team}`} />
+                <TopCar color={t.drivers[0].color} className="tcard-car" title={`Monoposto ${t.team}`} />
               </motion.div>
               <div className="tcard-drivers">
                 {t.drivers.map((d) => (

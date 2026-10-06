@@ -1,4 +1,4 @@
-import type { Filter } from './types';
+import type { Filter, RawCircuitInfo } from './types';
 import { cacheGet, cacheSet } from './cache';
 
 export const OPENF1_BASE = 'https://api.openf1.org/v1';
@@ -11,6 +11,8 @@ export const OPENF1_BASE = 'https://api.openf1.org/v1';
 export interface DataSource {
   readonly id: string;
   get<T>(endpoint: string, filters?: Filter[], opts?: GetOptions): Promise<T[]>;
+  /** Circuit map metadata (corners, rotation); defaults to the MultiViewer API. */
+  circuitInfo?(meta: { circuit: string; year: number }): Promise<RawCircuitInfo | null>;
 }
 
 export interface GetOptions {

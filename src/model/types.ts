@@ -60,6 +60,8 @@ export interface Lap {
   i1: number | null;
   i2: number | null;
   st: number | null;
+  /** mini-sector status codes per sector (2048 yellow, 2049 green, 2051 purple, 2064 pit) */
+  segs: (number | null)[][];
 }
 
 export type Compound = 'SOFT' | 'MEDIUM' | 'HARD' | 'INTERMEDIATE' | 'WET' | 'UNKNOWN';
@@ -149,7 +151,17 @@ export interface ReferencePath {
   length: number;
   /** degrees to rotate the world so the circuit looks like the TV graphic */
   rotation: number;
-  corners: { num: string; x: number; y: number }[];
+  corners: { num: string; x: number; y: number; name?: string }[];
+  /** world units per metre (OpenF1 positions are ~decimetres) */
+  unitsPerMeter: number;
+  /** lap length in metres */
+  lengthM: number;
+  /** reference-lap speed (km/h) at each vertex, if known */
+  speed: Float32Array | null;
+  /** pit lane polyline, if a pit stop could be traced */
+  pitLane: { x: Float32Array; y: Float32Array } | null;
+  /** starting grid slots (race) */
+  grid: { pos: number; x: number; y: number; angle: number }[];
   /** DRS zones as [startFraction, endFraction] of a lap. */
   drs: [number, number][];
   /** Sector boundaries as lap fractions (end of S1, end of S2). */
@@ -159,6 +171,8 @@ export interface ReferencePath {
 export interface SessionData {
   source: string;
   meta: SessionMeta;
+  /** matching entry of the real-circuit dataset */
+  circuitId?: string;
   t0: number;
   drivers: Driver[];
   byNum: Map<number, Driver>;

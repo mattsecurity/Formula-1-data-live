@@ -20,7 +20,9 @@ import type {
   RawStint,
   RawWeather,
 } from '../api/types';
+import { cornerName, findCircuit } from '../data/circuits';
 import { normCompound, teamColor } from './constants';
+import { analyseReferenceLap, gridSlots, tracePitLane } from './trackDetails';
 import { buildReference, projectS } from './geometry';
 import { bisect, carAt, distanceAt, runningMax, timeAtDistance } from './interp';
 import type {
@@ -323,53 +325,6 @@ function buildPeriods(
   return out.sort((a, b) => a.start - b.start);
 }
 
-function drsAndSectors(
-  ref: ReferencePath,
-  refLap: Lap,
-  refTrack: DriverTrack,
-  carData: RawCarData[],
-  t0: number,
-): void {
-  const L = ref.length;
-  const fracAt = (t: number) => {
-    const p = carAt(refTrack, t);
-    if (!p) return null;
-    return projectS(ref, p.x, p.y).s / L;
-  };
-  // sectors
-  if (refLap.s1 && refLap.s2 && refLap.start != null) {
-    const f1 = fracAt(refLap.start + refLap.s1);
-    const f2 = fracAt(refLap.start + refLap.s1 + refLap.s2);
-    if (f1 != null && f2 != null && f1 < f2) ref.sectors = [f1, f2];
-  }
-  // DRS: contiguous runs of open flap (8 = eligible, 10/12/14 = open)
-  const samples = carData
-    .map((c) => ({ t: (parseDate(c.date) - t0) / 1000, open: c.drs >= 10 }))
-    .filter((c) => Number.isFinite(c.t))
-    .sort((a, b) => a.t - b.t);
-  const zones: [number, number][] = [];
-  let runStart: number | null = null;
-  let last = 0;
-  for (const s of samples) {
-    if (s.open && runStart == null) runStart = s.t;
-    if (!s.open && runStart != null) {
-      if (s.t - runStart > 1.5) {
-        const a = fracAt(runStart);
-        const b = fracAt(last);
-        if (a != null && b != null) zones.push([a, b]);
-      }
-      runStart = null;
-    }
-    last = s.t;
-  }
-  if (runStart != null && last - runStart > 1.5) {
-    const a = fracAt(runStart);
-    const b = fracAt(last);
-    if (a != null && b != null) zones.push([a, b]);
-  }
-  ref.drs = zones;
-}
-
 export interface LoadOptions {
   signal?: AbortSignal;
   onProgress?: Progress;
@@ -452,6 +407,7 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
         i1: l.i1_speed ?? null,
         i2: l.i2_speed ?? null,
         st: l.st_speed ?? null,
+        segs: [l.segments_sector_1 ?? [], l.segments_sector_2 ?? [], l.segments_sector_3 ?? []],
       };
     })
     .sort((a, b) => a.driver - b.driver || a.lap - b.lap);
@@ -551,14 +507,18 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
   const chosen = chooseReferenceLap(laps, compact, meta.kind);
   const outline = chosen?.pts ?? fallbackOutline(compact);
   if (!outline) throw new Error('Impossibile ricostruire il tracciato da questi dati');
-  const info = await fetchCircuitInfo(meta, signal);
+  const info = src.circuitInfo ? await src.circuitInfo(meta) : await fetchCircuitInfo(meta, signal);
+  const circuit = findCircuit(meta.circuit, meta.location, meta.meetingName);
   const ref = buildReference(outline.x, outline.y, {
     rotation: isNum(info?.rotation) ? info!.rotation : undefined,
   });
   if (info?.corners) {
     ref.corners = info.corners
       .filter((c) => c.trackPosition && isNum(c.trackPosition.x))
-      .map((c) => ({ num: `${c.number}${c.letter ?? ''}`, x: c.trackPosition.x, y: c.trackPosition.y }));
+      .map((c) => {
+        const num = `${c.number}${c.letter ?? ''}`;
+        return { num, x: c.trackPosition.x, y: c.trackPosition.y, name: cornerName(circuit?.id, num) };
+      });
   }
 
   // ---------------- distances
@@ -572,7 +532,8 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
     tracks.set(d.num, tr);
   }
 
-  // ---------------- DRS & sectors from the reference lap
+  // ---------------- DRS, sectors, speed map & lap length from the reference lap
+  let integratedM: number | null = null;
   if (chosen) {
     const refTrack = tracks.get(chosen.lap.driver);
     if (refTrack) {
@@ -585,9 +546,11 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
           { signal, cacheMs },
         )
         .catch(() => [] as RawCarData[]);
-      drsAndSectors(ref, chosen.lap, refTrack, cd, t0);
+      integratedM = analyseReferenceLap(ref, chosen.lap, refTrack, cd, t0).lengthM;
     }
   }
+  ref.lengthM = circuit?.length ?? integratedM ?? ref.length / 10;
+  ref.unitsPerMeter = ref.length / ref.lengthM;
 
   // ---------------- stints, pits, race control, weather, radio
   const stints = rawStints
@@ -692,10 +655,14 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
         .sort((a, b) => a.pos - b.pos)
     : [];
 
+  ref.pitLane = tracePitLane(ref, tracks, pits);
+  if (isRace) ref.grid = gridSlots(ref, tracks, grid, raceStart);
+
   progress('Pronto', 1);
   return {
     source: src.id,
     meta,
+    circuitId: circuit?.id,
     t0,
     drivers,
     byNum,

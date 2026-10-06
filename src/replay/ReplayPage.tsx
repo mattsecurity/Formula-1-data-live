@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { flagFor } from '../model/constants';
 import {
   STATUS_COLOR,
   STATUS_LABEL,
@@ -21,6 +20,7 @@ import { Leaderboard } from './Leaderboard';
 import { SPEEDS, usePlayback, usePlaybackClock, useThrottledTime } from './store';
 import { TelemetryPanel } from './TelemetryPanel';
 import { TrackCanvas } from './TrackCanvas';
+import { SPEED_LEGEND } from './trackArt';
 import { useSession } from './useSession';
 import { useStandings } from './useStandings';
 import { Chequered, EventFeed, StartLights, StatusBanner } from './Events';
@@ -57,7 +57,7 @@ function TopHud({ data, onSettings, settingsOpen }: { data: SessionData; onSetti
         </Link>
         <div className="hud-title">
           <div className="eyebrow">
-            {flagFor(data.meta.countryCode)} {data.meta.meetingName} {data.meta.year}
+            {data.meta.meetingName} {data.meta.year} · {data.meta.circuit}
           </div>
           <div className="hud-session">
             {data.meta.name}
@@ -150,6 +150,12 @@ function SettingsPopover({ data, onClose }: { data: SessionData; onClose: () => 
       <Toggle label="Zone DRS" hint="D" checked={s.showDrs} onChange={(v) => s.set({ showDrs: v })} />
       <Toggle label="Scie delle monoposto" hint="T" checked={s.showTrails} onChange={(v) => s.set({ showTrails: v })} />
       <Toggle
+        label="Mappa velocità"
+        hint={data.ref.speed ? 'V' : 'non disponibile'}
+        checked={s.showSpeedMap}
+        onChange={(v) => s.set({ showSpeedMap: v })}
+      />
+      <Toggle
         label="Numeri delle curve"
         hint={data.ref.corners.length ? 'C' : 'non disponibili'}
         checked={s.showCorners}
@@ -194,7 +200,7 @@ function SettingsPopover({ data, onClose }: { data: SessionData; onClose: () => 
         </div>
       </div>
       <div className="settings-keys dim">
-        <b>Scorciatoie</b> Spazio play/pausa · ←/→ ±10s · ↑/↓ velocità · 1–9 velocità diretta · R ricomincia · I analisi · F segui
+        <b>Scorciatoie</b> Spazio play/pausa · ←/→ ±10s · ↑/↓ velocità · 1–9 velocità diretta · R ricomincia · V mappa velocità · I analisi · F segui
         pilota · Esc deseleziona · Click su un'auto o in classifica per selezionarla, Shift+click per confrontarne fino a 3.
       </div>
     </motion.div>
@@ -289,6 +295,10 @@ function useKeyboard(data: SessionData) {
         case 'T':
           s.set({ showTrails: !s.showTrails });
           break;
+        case 'v':
+        case 'V':
+          s.set({ showSpeedMap: !s.showSpeedMap });
+          break;
         case 'c':
         case 'C':
           s.set({ showCorners: !s.showCorners });
@@ -312,6 +322,28 @@ function useKeyboard(data: SessionData) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [data]);
+}
+
+function SpeedLegend() {
+  const on = usePlayback((s) => s.showSpeedMap);
+  return (
+    <AnimatePresence>
+      {on && (
+        <motion.div className="speed-legend glass" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
+          <span className="label">Velocità giro di riferimento</span>
+          <div className="speed-scale">
+            {SPEED_LEGEND.map((s) => (
+              <span key={s.v}>
+                <i style={{ background: s.color }} />
+                {s.v}
+              </span>
+            ))}
+            <span className="dim">km/h</span>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 
 function ReplayView({ data }: { data: SessionData }) {
@@ -375,6 +407,7 @@ function ReplayView({ data }: { data: SessionData }) {
         <RaceControlTicker data={data} />
       </div>
 
+      <SpeedLegend />
       <InsightsSheet data={data} rows={view.rows} />
       <motion.div
         className="replay-dock"

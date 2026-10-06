@@ -1,140 +1,90 @@
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { DEMO_MEETING_KEY, DEMO_QUALI_KEY, DEMO_RACE_KEY } from '../api/demo';
+import { circuitById, findCircuit } from '../data/circuits';
 import { currentYear, getDrivers, getResults, getSeason, latestCompletedSession } from '../data/sources';
 import { useAsync } from '../data/useAsync';
-import { flagFor } from '../model/constants';
 import { parseDate } from '../model/util';
-import { CarArt } from '../ui/CarArt';
+import { CircuitOutline } from '../ui/CircuitOutline';
 import { Headshot } from '../ui/Headshot';
 import { Icon, type IconName } from '../ui/Icon';
-import { CountUp, EASE, Reveal, WordsReveal, useTilt } from '../ui/motion';
+import { CountUp, EASE, Reveal } from '../ui/motion';
 import './home.css';
 
-const FEATURES: { icon: IconName; title: string; text: string; color: string }[] = [
-  { icon: 'play', title: 'Replay di ogni gara', text: 'Rivivi gare, sprint, qualifiche e prove libere dal 2023 con le posizioni reali delle monoposto in pista.', color: '#ff453a' },
-  { icon: 'list', title: 'Classifica che vive', text: 'L’ordine si aggiorna in tempo reale a ogni sorpasso in pista, con distacchi live, gomme e pit stop.', color: '#30d158' },
-  { icon: 'gauge', title: 'Telemetria di bordo', text: 'Velocità, marcia, giri motore, acceleratore, freno e DRS di ogni pilota, sincronizzati con il replay.', color: '#0a84ff' },
-  { icon: 'chart', title: 'Analisi da muretto', text: 'Tempi sul giro, distacchi, lap chart, strategie gomme, settori viola e pit stop più veloci.', color: '#bf5af2' },
-  { icon: 'stopwatch', title: 'Lap Lab', text: 'Confronta i giri più veloci di più piloti curva per curva, con il delta tempo metro per metro.', color: '#ff9f0a' },
-  { icon: 'radio', title: 'Team radio e direzione gara', text: 'Ascolta i team radio ufficiali e segui bandiere, Safety Car e penalità nel momento in cui accadono.', color: '#40c8e0' },
+const FEATURES: { icon: IconName; title: string; text: string }[] = [
+  { icon: 'play', title: 'Replay della sessione', text: 'Gare, sprint, qualifiche e prove libere dal 2023, con le posizioni GPS reali di tutte le monoposto.' },
+  { icon: 'list', title: 'Torre dei tempi live', text: 'Ordine calcolato dalla posizione in pista: si aggiorna nell’istante del sorpasso, con intervalli, gomme e soste.' },
+  { icon: 'gauge', title: 'Telemetria di bordo', text: 'Velocità, marcia, RPM, gas, freno, DRS, delta live sul giro personale e minisettori.' },
+  { icon: 'layers', title: 'Circuito in dettaglio', text: 'Cordoli, corsia box, griglia, settori, zone DRS, curve numerate con il loro nome e mappa delle velocità.' },
+  { icon: 'chart', title: 'Analisi da muretto', text: 'Tempi sul giro, distacchi, lap chart, strategie gomme, settori viola, pit stop e mondiale live.' },
+  { icon: 'stopwatch', title: 'Lap Lab', text: 'Confronto dei giri metro per metro: delta tempo, tracce di telemetria e mini-settori dominanti.' },
 ];
 
-function SpeedLines() {
-  return (
-    <div className="speed-lines" aria-hidden>
-      {Array.from({ length: 14 }, (_, i) => (
-        <i key={i} style={{ top: `${18 + ((i * 37) % 64)}%`, animationDelay: `${(i * 0.37) % 2.4}s`, width: `${80 + ((i * 53) % 160)}px`, opacity: 0.25 + ((i * 7) % 5) / 10 }} />
-      ))}
-    </div>
-  );
-}
-
-function FeatureCard({ f, i }: { f: (typeof FEATURES)[number]; i: number }) {
-  const tilt = useTilt(7);
-  return (
-    <motion.article
-      className="feature card shine-sweep"
-      initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
-      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.7, delay: (i % 3) * 0.08, ease: EASE }}
-      style={{ ...tilt.style, ['--accent' as string]: f.color }}
-      onPointerMove={tilt.onPointerMove}
-      onPointerLeave={tilt.onPointerLeave}
-    >
-      <motion.span className="sheen" style={{ background: tilt.sheen }} />
-      <motion.span
-        className="feature-icon"
-        style={{ background: `${f.color}22`, color: f.color }}
-        whileHover={{ scale: 1.12, rotate: -6 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 14 }}
-      >
-        <Icon name={f.icon} size={22} />
-      </motion.span>
-      <h3>{f.title}</h3>
-      <p className="muted">{f.text}</p>
-    </motion.article>
-  );
-}
+const HERO_CARS = [
+  { color: '#ff8000', lap: 9.6, offset: 0 },
+  { color: '#e8002d', lap: 9.75, offset: 0.35 },
+  { color: '#3671c6', lap: 9.9, offset: 0.7 },
+  { color: '#27f4d2', lap: 10.05, offset: 1.1 },
+];
 
 function Hero() {
   const latest = useAsync((s) => latestCompletedSession(currentYear(), 'Race', s), []);
-  // A custom photo can be dropped in public/img/hero.jpg; otherwise the vector car is shown.
-  const [imgOk, setImgOk] = useState(false);
-  const [arrived, setArrived] = useState(false);
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => setImgOk(true);
-    img.src = './img/hero.jpg';
-  }, []);
-  // pointer parallax
-  const px = useMotionValue(0);
-  const py = useMotionValue(0);
-  const sx = useSpring(px, { stiffness: 80, damping: 18 });
-  const sy = useSpring(py, { stiffness: 80, damping: 18 });
-  const carX = useTransform(sx, (v) => v * -18);
-  const carY = useTransform(sy, (v) => v * -10);
-  const glowX = useTransform(sx, (v) => v * 40);
+  const circuit =
+    (latest.data && findCircuit(latest.data.meeting.circuit_short_name, latest.data.meeting.location)) || circuitById('it-1922')!;
   return (
-    <section
-      className="hero"
-      onPointerMove={(e) => {
-        px.set(e.clientX / window.innerWidth - 0.5);
-        py.set(e.clientY / window.innerHeight - 0.5);
-      }}
-    >
-      <motion.div className="hero-bg" aria-hidden style={{ x: glowX }} />
+    <section className="hero">
       <div className="hero-copy">
-        <motion.div className="eyebrow" initial={{ opacity: 0, letterSpacing: '0.3em' }} animate={{ opacity: 1, letterSpacing: '0.08em' }} transition={{ duration: 1.2, ease: EASE }}>
-          Formula 1 · Replay e telemetria
+        <motion.div className="eyebrow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+          Formula 1 · Replay · Telemetria
         </motion.div>
-        <h1 className="title-xl">
-          <WordsReveal text="Ogni sorpasso." delay={0.15} />
+        <motion.h1
+          className="title-xl"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: EASE, delay: 0.1 }}
+        >
+          Il muretto box,
           <br />
-          <WordsReveal text="Ogni dato." delay={0.45} className="gradient-text gradient-anim" />
-        </h1>
-        <motion.p className="hero-sub muted" initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }} transition={{ duration: 0.9, delay: 0.75, ease: EASE }}>
-          Il tuo muretto box personale: rivivi ogni Gran Premio con la telemetria reale, una classifica che cambia a ogni
-          sorpasso e le analisi che usano i team.
+          <span className="dim-2">nel tuo browser.</span>
+        </motion.h1>
+        <motion.p className="hero-sub" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: EASE, delay: 0.25 }}>
+          Rivivi ogni sessione con i dati reali del cronometraggio: posizioni in pista, telemetria di ogni monoposto e
+          un’analisi completa, giro dopo giro.
         </motion.p>
-        <motion.div className="hero-cta" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.95, ease: EASE }}>
+        <motion.div className="hero-cta" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: EASE, delay: 0.4 }}>
           {latest.data ? (
             <Link className="btn btn-primary" to={`/replay/${latest.data.session.session_key}`}>
-              <Icon name="play" size={16} /> Guarda {latest.data.meeting.meeting_name.replace('Grand Prix', 'GP')}
+              <Icon name="play" size={14} /> {latest.data.meeting.meeting_name}
             </Link>
           ) : (
             <Link className="btn btn-primary" to="/season">
-              <Icon name="calendar" size={16} /> Scegli una gara
+              Scegli una gara
             </Link>
           )}
           <Link className="btn btn-secondary" to={`/replay/${DEMO_RACE_KEY}`}>
-            Prova la demo offline
+            Demo offline · Monza
           </Link>
         </motion.div>
       </div>
-      <motion.div className="hero-car" style={{ x: carX, y: carY }}>
-        {!arrived && <SpeedLines />}
-        <motion.div
-          initial={{ x: '75vw', skewX: -8, filter: 'blur(14px)' }}
-          animate={{ x: 0, skewX: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-          onAnimationComplete={() => setArrived(true)}
-        >
-          {imgOk ? (
-            <img src="./img/hero.jpg" alt="Monoposto di Formula 1" className="hero-photo" />
-          ) : (
-            <>
-              <CarArt color="#d10a0a" accent="#ffffff" number={16} compound="SOFT" className={`hero-svg ${arrived ? 'idle' : ''}`} spinning={!arrived} title="Monoposto di Formula 1" />
-              <div className="hero-reflection" aria-hidden>
-                <CarArt color="#d10a0a" accent="#ffffff" number={16} compound="SOFT" className={`hero-svg ${arrived ? 'idle' : ''}`} spinning={!arrived} />
-              </div>
-            </>
+      <motion.figure className="hero-map" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, ease: EASE }}>
+        <CircuitOutline circuit={circuit} width={640} height={520} stroke={3} animate glow cars={HERO_CARS} className="hero-svg" />
+        <figcaption className="hero-cap">
+          <div>
+            <span className="label">Circuito</span>
+            <b>{circuit.name}</b>
+          </div>
+          <div>
+            <span className="label">Lunghezza</span>
+            <b className="num">{(circuit.length / 1000).toFixed(3)} km</b>
+          </div>
+          {circuit.firstGp && (
+            <div>
+              <span className="label">Primo GP</span>
+              <b className="num">{circuit.firstGp}</b>
+            </div>
           )}
-        </motion.div>
-        <motion.div className="hero-floor" initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }} transition={{ duration: 1.4, delay: 0.9, ease: EASE }} aria-hidden />
-      </motion.div>
+        </figcaption>
+      </motion.figure>
     </section>
   );
 }
@@ -146,72 +96,64 @@ function LatestWeekend() {
     const [results, drivers] = await Promise.all([getResults(latest.session.session_key, signal), getDrivers(latest.session.session_key, signal)]);
     return { ...latest, results, drivers };
   }, []);
-  if (state.loading) return <div className="skeleton" style={{ height: 300 }} />;
+  if (state.loading) return <div className="skeleton" style={{ height: 260 }} />;
   if (!state.data) return null;
   const { meeting, session, results, drivers } = state.data;
   const byNum = new Map(drivers.map((d) => [d.num, d]));
-  const podium = results
+  const top = results
     .filter((r) => r.position != null && r.position <= 3)
     .sort((a, b) => a.position! - b.position!)
-    .map((r) => byNum.get(r.driver_number))
-    .filter(Boolean);
-  const order = [podium[1], podium[0], podium[2]];
+    .map((r) => ({ r, d: byNum.get(r.driver_number) }))
+    .filter((x) => x.d);
+  const circuit = findCircuit(meeting.circuit_short_name, meeting.location);
   return (
-    <motion.section
-      className="latest card"
-      initial={{ opacity: 0, y: 30, scale: 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.9, ease: EASE }}
-    >
+    <motion.section className="latest card" initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: EASE }}>
       <div className="latest-info">
-        <div className="eyebrow">Ultimo Gran Premio</div>
-        <h2 className="title-lg" style={{ margin: '6px 0 4px' }}>
-          {flagFor(meeting.country_code)} {meeting.meeting_name}
+        <div className="label">Ultimo Gran Premio · Round {meeting.round}</div>
+        <h2 className="title-lg" style={{ margin: '8px 0 4px' }}>
+          {meeting.meeting_name}
         </h2>
         <p className="muted" style={{ margin: 0 }}>
           {meeting.circuit_short_name} · {new Date(parseDate(session.date_start)).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
+        <ol className="podium">
+          {top.map(({ r, d }, i) => (
+            <motion.li
+              key={d!.num}
+              style={{ ['--team' as string]: d!.color }}
+              initial={{ opacity: 0, x: -12 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 + i * 0.1, duration: 0.6, ease: EASE }}
+            >
+              <span className="pd-pos num">{r.position}</span>
+              <Headshot driver={d!} size={40} />
+              <span className="pd-name">
+                <b>{d!.full}</b>
+                <span>{d!.team}</span>
+              </span>
+              <span className="pd-gap num">
+                {i === 0
+                  ? 'Vincitore'
+                  : typeof r.gap_to_leader === 'number'
+                    ? `+${r.gap_to_leader.toFixed(3)}`
+                    : Array.isArray(r.gap_to_leader)
+                      ? ''
+                      : (r.gap_to_leader ?? '')}
+              </span>
+            </motion.li>
+          ))}
+        </ol>
         <div className="latest-cta">
           <Link className="btn btn-primary" to={`/replay/${session.session_key}`}>
-            <Icon name="play" size={16} /> Replay gara
+            <Icon name="play" size={14} /> Replay gara
           </Link>
           <Link className="btn btn-secondary" to={`/meeting/${meeting.meeting_key}`}>
-            Tutte le sessioni
+            Weekend completo
           </Link>
         </div>
       </div>
-      {podium.length === 3 && (
-        <div className="podium" aria-label="Podio">
-          {order.map((d, i) =>
-            d ? (
-              <motion.div
-                key={d.num}
-                className={`podium-step step-${[2, 1, 3][i]}`}
-                style={{ ['--team' as string]: d.color }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.4 + [0.25, 0.5, 0.1][i], ease: EASE }}
-              >
-                <Headshot driver={d} size={[2, 1, 3][i] === 1 ? 96 : 76} />
-                <b>{d.code}</b>
-                <span className="dim">{d.team}</span>
-                <motion.div
-                  className="podium-block"
-                  initial={{ scaleY: 0 }}
-                  whileInView={{ scaleY: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 120, damping: 16, delay: [0.25, 0.5, 0.1][i] }}
-                  style={{ transformOrigin: 'bottom' }}
-                >
-                  {[2, 1, 3][i]}
-                </motion.div>
-              </motion.div>
-            ) : null,
-          )}
-        </div>
-      )}
+      {circuit && <CircuitOutline circuit={circuit} width={360} height={300} stroke={2.4} className="latest-map" />}
     </motion.section>
   );
 }
@@ -221,20 +163,22 @@ function NextRace() {
   const next = s.data?.find((m) => m.status === 'next' || m.status === 'live');
   if (!next) return null;
   const days = Math.max(0, Math.ceil((next.start - Date.now()) / 86_400_000));
+  const circuit = findCircuit(next.circuit_short_name, next.location);
   return (
     <Link to={`/meeting/${next.meeting_key}`} className="next card press">
-      <div>
-        <div className="eyebrow">{next.status === 'live' ? 'In corso adesso' : 'Prossimo weekend'}</div>
+      {circuit && <CircuitOutline circuit={circuit} width={120} height={90} stroke={1.6} className="next-map" showStart={false} />}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="label">{next.status === 'live' ? 'In corso' : 'Prossimo appuntamento'} · Round {next.round}</div>
         <div className="title-md" style={{ marginTop: 4 }}>
-          {flagFor(next.country_code)} {next.meeting_name}
+          {next.meeting_name}
         </div>
-        <div className="muted" style={{ fontSize: 14 }}>
-          {next.circuit_short_name} · Round {next.round}
+        <div className="muted" style={{ fontSize: 13 }}>
+          {next.circuit_short_name} · {new Date(next.start).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}
         </div>
       </div>
       <div className="next-count">
-        <b className="tabular">{next.status === 'live' ? 'LIVE' : <CountUp value={days} />}</b>
-        {next.status !== 'live' && <span className="dim">{days === 1 ? 'giorno' : 'giorni'}</span>}
+        <b className="num">{next.status === 'live' ? 'LIVE' : <CountUp value={days} />}</b>
+        {next.status !== 'live' && <span className="label">{days === 1 ? 'giorno' : 'giorni'}</span>}
       </div>
     </Link>
   );
@@ -244,7 +188,7 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
-      <div className="page" style={{ paddingTop: 24 }}>
+      <div className="page" style={{ paddingTop: 8 }}>
         <div className="home-grid">
           <LatestWeekend />
           <NextRace />
@@ -252,53 +196,57 @@ export default function HomePage() {
 
         <section className="features">
           <Reveal>
-            <div className="eyebrow">Cosa puoi fare</div>
-            <h2 className="title-lg" style={{ margin: '8px 0 28px' }}>Tutto il weekend, in un unico posto.</h2>
+            <div className="eyebrow">Funzioni</div>
+            <h2 className="title-lg" style={{ margin: '8px 0 26px' }}>Tutto il weekend, con i dati reali.</h2>
           </Reveal>
           <div className="feature-grid">
             {FEATURES.map((f, i) => (
-              <FeatureCard key={f.title} f={f} i={i} />
+              <Reveal key={f.title} delay={(i % 3) * 0.06} y={18}>
+                <article className="feature card">
+                  <span className="feature-icon">
+                    <Icon name={f.icon} size={18} />
+                  </span>
+                  <h3>{f.title}</h3>
+                  <p>{f.text}</p>
+                </article>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <Reveal>
-        <section className="demo-band card shine-sweep">
-          <div>
-            <div className="eyebrow">Nessuna connessione? Nessun problema</div>
-            <h2 className="title-md" style={{ margin: '6px 0' }}>Demo Grand Prix — una gara simulata completa</h2>
-            <p className="muted" style={{ margin: 0, maxWidth: 560 }}>
-              18 giri con sorpassi, Safety Car, pit stop, un ritiro e qualifiche: perfetta per scoprire tutte le funzioni senza
-              scaricare nulla.
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Link className="btn btn-secondary" to={`/replay/${DEMO_RACE_KEY}`}>
-              Gara demo
-            </Link>
-            <Link className="btn btn-secondary" to={`/lab/${DEMO_QUALI_KEY}`}>
-              Lap Lab demo
-            </Link>
-            <Link className="btn btn-secondary" to={`/meeting/${DEMO_MEETING_KEY}`}>
-              Weekend demo
-            </Link>
-          </div>
-        </section>
+          <section className="demo-band card">
+            <CircuitOutline circuit={circuitById('it-1922')!} width={150} height={110} stroke={1.8} className="demo-map" cars={HERO_CARS.slice(0, 2)} />
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <div className="label">Demo offline</div>
+              <h2 className="title-md" style={{ margin: '6px 0' }}>Gran Premio d’Italia simulato a Monza</h2>
+              <p className="muted" style={{ margin: 0, maxWidth: 560, fontSize: 14 }}>
+                18 giri sul tracciato reale con sorpassi, Safety Car, pit stop e un ritiro, più una qualifica per il Lap Lab.
+                Funziona anche senza connessione.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Link className="btn btn-secondary btn-sm" to={`/replay/${DEMO_RACE_KEY}`}>
+                Gara
+              </Link>
+              <Link className="btn btn-secondary btn-sm" to={`/lab/${DEMO_QUALI_KEY}`}>
+                Lap Lab
+              </Link>
+              <Link className="btn btn-secondary btn-sm" to={`/meeting/${DEMO_MEETING_KEY}`}>
+                Weekend
+              </Link>
+            </div>
+          </section>
         </Reveal>
 
-        <footer className="footer dim">
+        <footer className="footer">
           <p>
-            Dati da <a href="https://openf1.org" target="_blank" rel="noreferrer">OpenF1</a> (API open source, nessun account
-            richiesto). Ispirato a{' '}
-            <a href="https://github.com/IAmTomShaw/f1-race-replay" target="_blank" rel="noreferrer">
-              f1-race-replay
-            </a>{' '}
-            di Tom Shaw e dei suoi contributor.
+            Dati: <a href="https://openf1.org" target="_blank" rel="noreferrer">OpenF1</a> · Tracciati:{' '}
+            <a href="https://github.com/bacinger/f1-circuits" target="_blank" rel="noreferrer">bacinger/f1-circuits</a> · Basato su{' '}
+            <a href="https://github.com/IAmTomShaw/f1-race-replay" target="_blank" rel="noreferrer">f1-race-replay</a> di Tom Shaw e
+            contributor.
           </p>
-          <p>
-            Progetto non ufficiale, senza scopo di lucro. Formula 1, F1 e i marchi correlati appartengono ai rispettivi
-            proprietari.
-          </p>
+          <p>Progetto non ufficiale e senza scopo di lucro. Formula 1, F1 e i marchi correlati appartengono ai rispettivi proprietari.</p>
         </footer>
       </div>
     </main>

@@ -21,7 +21,8 @@ export interface TelemetrySample {
   gear: number;
   throttle: number;
   brake: number;
-  drs: boolean;
+  /** raw DRS code: 0–1 off, 8 eligible, 10/12/14 open */
+  drs: number;
 }
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -122,6 +123,6 @@ export function sampleAt(tel: CarTelemetry, t: number): TelemetrySample | null {
     gear: tel.gear[i],
     throttle: tel.throttle[i] + (tel.throttle[j] - tel.throttle[i]) * u,
     brake: tel.brake[i],
-    drs: tel.drs[i] >= 10,
+    drs: tel.drs[i],
   };
 }

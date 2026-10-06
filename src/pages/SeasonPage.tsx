@@ -2,10 +2,11 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { currentYear, getSeason, seasons, type MeetingSummary } from '../data/sources';
 import { useAsync } from '../data/useAsync';
-import { flagFor } from '../model/constants';
+import { findCircuit } from '../data/circuits';
+import { CircuitOutline } from '../ui/CircuitOutline';
+import { Flag } from '../ui/Flag';
 import { Segmented } from '../ui/Segmented';
 import { ErrorCard } from '../ui/ErrorCard';
-import { useTilt } from '../ui/motion';
 import './season.css';
 
 const fmtRange = (a: number, b: number) => {
@@ -23,31 +24,36 @@ const STATUS: Record<MeetingSummary['status'], string> = {
 };
 
 function MeetingCard({ m, i }: { m: MeetingSummary; i: number }) {
-  const tilt = useTilt(6);
+  const circuit = findCircuit(m.circuit_short_name, m.location);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.6, delay: Math.min(i, 16) * 0.035, ease: [0.32, 0.72, 0, 1] }}
-      style={tilt.style}
-      onPointerMove={tilt.onPointerMove}
-      onPointerLeave={tilt.onPointerLeave}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, delay: Math.min(i, 16) * 0.03, ease: [0.32, 0.72, 0, 1] }}
     >
-      <Link to={`/meeting/${m.meeting_key}`} className={`mcard card press status-${m.status}`}>
-        <motion.span className="sheen" style={{ background: tilt.sheen }} />
+      <Link to={`/meeting/${m.meeting_key}`} className={`mcard card status-${m.status}`}>
         <div className="mcard-top">
-          <span className="mcard-round">R{String(m.round).padStart(2, '0')}</span>
+          <span className="mcard-round num">R{String(m.round).padStart(2, '0')}</span>
           <span className={`mcard-status s-${m.status}`}>{STATUS[m.status]}</span>
         </div>
         <div className="mcard-circuit">
-          {m.circuit_image ? <img src={m.circuit_image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => (e.currentTarget.style.display = 'none')} /> : null}
+          {circuit ? (
+            <CircuitOutline circuit={circuit} width={220} height={120} stroke={1.8} />
+          ) : m.circuit_image ? (
+            <img src={m.circuit_image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => (e.currentTarget.style.display = 'none')} />
+          ) : null}
         </div>
-        <div className="mcard-flag">{flagFor(m.country_code)}</div>
+        <div className="mcard-meta">
+          <Flag code={m.country_code} url={m.country_flag} />
+          <span>{m.country_name}</span>
+          {m.sessions.some((s) => /sprint/i.test(s.session_name)) && <span className="mcard-chip">Sprint</span>}
+        </div>
         <h3>{m.meeting_name}</h3>
-        <p className="muted">
-          {m.circuit_short_name} · {fmtRange(m.start, m.end)}
+        <p>
+          <span>{m.circuit_short_name}</span>
+          <span className="num">{fmtRange(m.start, m.end)}</span>
         </p>
-        {m.sessions.some((s) => /sprint/i.test(s.session_name)) && <span className="chip mcard-chip">Sprint</span>}
+        {circuit && <div className="mcard-len num">{(circuit.length / 1000).toFixed(3)} km</div>}
       </Link>
     </motion.div>
   );

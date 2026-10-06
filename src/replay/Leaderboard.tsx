@@ -1,18 +1,22 @@
 import { motion } from 'framer-motion';
+import { fmtLapTime, type StandingRow } from '../model/standings';
 import type { SessionData } from '../model/types';
-import type { StandingRow } from '../model/standings';
-import { Headshot } from '../ui/Headshot';
-import { Icon } from '../ui/Icon';
-import { Segmented } from '../ui/Segmented';
-import { TyreBadge } from '../ui/TyreBadge';
+import { COMPOUND_COLORS, COMPOUND_LETTER } from '../model/constants';
 import { usePlayback } from './store';
 import type { StandingsView } from './useStandings';
 import './leaderboard.css';
 
-function StatusPill({ row }: { row: StandingRow }) {
-  if (row.status === 'pit') return <span className="lb-pill lb-pill-pit">PIT</span>;
-  if (row.status === 'out') return <span className="lb-pill lb-pill-out">RIT</span>;
-  if (row.status === 'fin') return <span className="lb-pill lb-pill-fin">🏁</span>;
+const COLS = [
+  { id: 'interval', label: 'Int' },
+  { id: 'leader', label: 'Gap' },
+  { id: 'last', label: 'Ultimo' },
+  { id: 'best', label: 'Best' },
+] as const;
+
+function Status({ row }: { row: StandingRow }) {
+  if (row.status === 'pit') return <span className="tw-tag tw-pit">PIT</span>;
+  if (row.status === 'out') return <span className="tw-tag tw-out">OUT</span>;
+  if (row.status === 'fin') return <span className="tw-tag tw-fin">FIN</span>;
   return null;
 }
 
@@ -24,80 +28,81 @@ export function Leaderboard({ data, view, compact }: { data: SessionData; view: 
   const orderMode = usePlayback((s) => s.orderMode);
   const isRace = data.meta.kind === 'race';
   const now = performance.now();
+  const fastest = view.rows.reduce<StandingRow | null>((m, r) => (r.best != null && (m == null || r.best < m.best!) ? r : m), null);
+  const cols = isRace ? COLS : COLS.filter((c) => c.id !== 'interval');
+  const mode = !isRace && gapMode === 'interval' ? 'leader' : gapMode;
+
+  const value = (r: StandingRow) => {
+    if (r.status === 'out') return 'OUT';
+    if (mode === 'last') return fmtLapTime(r.lastLap);
+    if (mode === 'best') return fmtLapTime(r.best);
+    if (!isRace) return r.gap;
+    return mode === 'leader' ? r.gap : r.interval;
+  };
 
   return (
-    <section className={`lb glass ${compact ? 'lb-compact' : ''}`} aria-label="Classifica live">
-      <header className="lb-head">
-        <div>
-          <div className="eyebrow">{isRace ? 'Classifica live' : 'Tempi'}</div>
+    <section className={`tw glass ${compact ? 'tw-compact' : ''}`} aria-label="Classifica live">
+      <header className="tw-head">
+        <span className="label">{isRace ? (orderMode === 'live' ? 'Live' : 'Ufficiale') : 'Tempi'}</span>
+        <div className="tw-cols" role="group" aria-label="Colonna dati">
+          {cols.map((c) => (
+            <button key={c.id} aria-pressed={mode === c.id} onClick={() => set({ gapMode: c.id })}>
+              {c.label}
+            </button>
+          ))}
         </div>
-        {isRace && (
-          <Segmented
-            label="Tipo di distacco"
-            value={gapMode}
-            onChange={(v) => set({ gapMode: v })}
-            options={[
-              { value: 'interval', label: 'Intervallo' },
-              { value: 'leader', label: 'Leader' },
-            ]}
-          />
-        )}
       </header>
-      <ol className="lb-list scroll-y">
+      <ol className="tw-list scroll-y">
         {view.rows.map((r, idx) => {
           const d = data.byNum.get(r.num)!;
           const flash = view.flashes.get(r.num);
           const isSel = selected.includes(r.num);
-          const gap = isRace ? (gapMode === 'leader' ? r.gap : r.interval) : r.gap;
+          const isFastest = fastest?.num === r.num;
           return (
             <motion.li
               key={r.num}
               layout="position"
-              initial={{ opacity: 0, x: -16 }}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.8, opacity: { delay: 0.4 + idx * 0.03 }, x: { delay: 0.4 + idx * 0.03 } }}
-              className={`lb-row ${isSel ? 'is-sel' : ''} ${r.status === 'out' ? 'is-out' : ''} ${
-                flash && flash.until > now ? (flash.dir > 0 ? 'flash-up' : 'flash-down') : ''
+              transition={{ type: 'spring', stiffness: 560, damping: 46, opacity: { delay: 0.25 + idx * 0.02 }, x: { delay: 0.25 + idx * 0.02 } }}
+              className={`tw-row ${isSel ? 'is-sel' : ''} ${r.status === 'out' ? 'is-out' : ''} ${
+                flash && flash.until > now ? (flash.dir > 0 ? 'up' : 'down') : ''
               }`}
               style={{ ['--team' as string]: d.color }}
             >
-              <button
-                className="lb-btn"
-                onClick={(e) => select(r.num, e.shiftKey || e.metaKey)}
-                aria-pressed={isSel}
-                aria-label={`P${r.pos} ${d.full}, ${d.team}`}
-              >
-                <span className="lb-pos tabular">{r.pos}</span>
-                <span className="lb-bar" />
-                {!compact && (d.headshot ? <Headshot driver={d} size={24} ring={false} /> : <span />)}
-                <span className="lb-code">{d.code}</span>
-                <span className="lb-delta tabular" aria-hidden>
-                  {isRace && r.delta !== 0 && r.status !== 'grid' && (
-                    <span style={{ color: r.delta > 0 ? 'var(--green)' : 'var(--red)' }}>
-                      <Icon name={r.delta > 0 ? 'arrowUp' : 'arrowDown'} size={10} strokeWidth={3} />
+              <button className="tw-btn" onClick={(e) => select(r.num, e.shiftKey || e.metaKey)} aria-pressed={isSel} aria-label={`P${r.pos} ${d.full}, ${d.team}`}>
+                <span className="tw-pos num">{r.pos}</span>
+                <span className="tw-bar" />
+                <span className="tw-code">{d.code}</span>
+                <span className="tw-delta num" aria-hidden>
+                  {isRace && r.delta !== 0 && r.status !== 'grid' ? (
+                    <span className={r.delta > 0 ? 'pos' : 'neg'}>
+                      {r.delta > 0 ? '▲' : '▼'}
                       {Math.abs(r.delta)}
                     </span>
-                  )}
+                  ) : null}
                 </span>
-                <StatusPill row={r} />
-                <span className="lb-gap tabular">{gap}</span>
-                <span className="lb-tyre">
-                  {r.compound !== 'UNKNOWN' && <TyreBadge compound={r.compound} size={18} age={compact ? undefined : r.tyreAge} />}
+                <span className="tw-flags">
+                  <Status row={r} />
+                  {isFastest && <span className="tw-fl" title="Giro più veloce" />}
                 </span>
+                <span className={`tw-val num ${mode === 'best' && isFastest ? 'purple' : ''}`}>{value(r)}</span>
+                {!compact && (
+                  <span className="tw-tyre" title={`${r.compound} · ${r.tyreAge} giri`}>
+                    {r.compound !== 'UNKNOWN' && (
+                      <>
+                        <i style={{ borderColor: COMPOUND_COLORS[r.compound] }}>{COMPOUND_LETTER[r.compound]}</i>
+                        <span className="num">{r.tyreAge}</span>
+                      </>
+                    )}
+                  </span>
+                )}
+                {!compact && isRace && <span className="tw-pits num" title="Soste">{r.pits || ''}</span>}
               </button>
             </motion.li>
           );
         })}
       </ol>
-      <footer className="lb-foot">
-        <span className="dim" style={{ fontSize: 11 }}>
-          {isRace
-            ? orderMode === 'live'
-              ? 'Ordine calcolato in tempo reale dalla posizione in pista'
-              : 'Ordine dal cronometraggio ufficiale'
-            : 'Ordinati per miglior giro'}
-        </span>
-      </footer>
     </section>
   );
 }

@@ -4,7 +4,9 @@ import { HOUR } from '../api/openf1';
 import type { RawMeeting, RawSession } from '../api/types';
 import { getDrivers, getResults, sourceForMeeting } from '../data/sources';
 import { useAsync } from '../data/useAsync';
-import { flagFor } from '../model/constants';
+import { findCircuit } from '../data/circuits';
+import { CircuitOutline } from '../ui/CircuitOutline';
+import { Flag } from '../ui/Flag';
 import { fmtLapTime } from '../model/standings';
 import { parseDate } from '../model/util';
 import { ErrorCard } from '../ui/ErrorCard';
@@ -89,6 +91,7 @@ export default function MeetingPage() {
   const { meeting, sessions } = st.data;
   if (!meeting) return <main className="page"><p className="muted">Weekend non trovato.</p></main>;
   const now = Date.now();
+  const circuit = findCircuit(meeting.circuit_short_name, meeting.location);
   const resultSession = [...sessions].reverse().find((s) => parseDate(s.date_end) < now && (s.session_name === 'Race' || s.session_name === 'Qualifying')) ?? [...sessions].reverse().find((s) => parseDate(s.date_end) < now);
 
   return (
@@ -98,22 +101,55 @@ export default function MeetingPage() {
       </Link>
       <section className="mt-head fade-in">
         <div>
-          <div className="eyebrow">
-            {meeting.location} · {meeting.country_name}
+          <div className="mt-country">
+            <Flag code={meeting.country_code} url={meeting.country_flag} />
+            <span className="label">
+              {meeting.location} · {meeting.country_name}
+            </span>
           </div>
-          <h1 className="title-lg" style={{ margin: '8px 0' }}>
-            {flagFor(meeting.country_code)} {meeting.meeting_name}
+          <h1 className="title-lg" style={{ margin: '10px 0 6px' }}>
+            {meeting.meeting_name}
           </h1>
-          <p className="muted" style={{ margin: 0 }}>
+          <p className="muted" style={{ margin: 0, fontSize: 14 }}>
             {meeting.meeting_official_name}
           </p>
-          <div className="mt-chips">
-            <span className="chip">{meeting.circuit_short_name}</span>
-            {meeting.circuit_type && <span className="chip">{meeting.circuit_type}</span>}
-          </div>
+          {circuit && (
+            <dl className="mt-stats">
+              <div>
+                <dt className="label">Circuito</dt>
+                <dd>{circuit.name}</dd>
+              </div>
+              <div>
+                <dt className="label">Lunghezza</dt>
+                <dd className="num">{(circuit.length / 1000).toFixed(3)} km</dd>
+              </div>
+              {circuit.firstGp && (
+                <div>
+                  <dt className="label">Primo GP</dt>
+                  <dd className="num">{circuit.firstGp}</dd>
+                </div>
+              )}
+              {circuit.altitude != null && (
+                <div>
+                  <dt className="label">Altitudine</dt>
+                  <dd className="num">{circuit.altitude} m</dd>
+                </div>
+              )}
+              {meeting.circuit_type && (
+                <div>
+                  <dt className="label">Tipo</dt>
+                  <dd>{meeting.circuit_type}</dd>
+                </div>
+              )}
+            </dl>
+          )}
         </div>
-        {meeting.circuit_image && (
-          <img className="mt-circuit" src={meeting.circuit_image} alt={`Tracciato di ${meeting.circuit_short_name}`} referrerPolicy="no-referrer" onError={(e) => (e.currentTarget.style.display = 'none')} />
+        {circuit ? (
+          <CircuitOutline circuit={circuit} width={440} height={320} stroke={2.6} animate glow className="mt-map" />
+        ) : (
+          meeting.circuit_image && (
+            <img className="mt-circuit" src={meeting.circuit_image} alt={`Tracciato di ${meeting.circuit_short_name}`} referrerPolicy="no-referrer" onError={(e) => (e.currentTarget.style.display = 'none')} />
+          )
         )}
       </section>
 

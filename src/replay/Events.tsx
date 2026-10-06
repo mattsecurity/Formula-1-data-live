@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fmtLapTime } from '../model/standings';
 import type { SessionData } from '../model/types';
 import { Headshot } from '../ui/Headshot';
@@ -46,7 +46,7 @@ export function StartLights({ onDone }: { onDone: () => void }) {
             animate={{ scale: 1, opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
             transition={{ type: 'spring', stiffness: 260, damping: 18 }}
           >
-            Luci spente — <span className="gradient-text">via!</span>
+            Luci spente
           </motion.div>
         )}
       </AnimatePresence>
@@ -59,52 +59,14 @@ export function StartLights({ onDone }: { onDone: () => void }) {
 
 // ---------------------------------------------------------------- chequered flag
 
-function Confetti({ colors }: { colors: string[] }) {
-  const pieces = useMemo(
-    () =>
-      Array.from({ length: 90 }, (_, i) => ({
-        left: Math.random() * 100,
-        delay: Math.random() * 0.8,
-        dur: 2.4 + Math.random() * 2,
-        rot: Math.random() * 720 - 360,
-        drift: Math.random() * 200 - 100,
-        color: colors[i % colors.length],
-        w: 6 + Math.random() * 6,
-      })),
-    [colors],
-  );
+function CheckerStrip() {
   return (
-    <div className="confetti" aria-hidden>
-      {pieces.map((p, i) => (
-        <i
-          key={i}
-          style={{
-            left: `${p.left}%`,
-            background: p.color,
-            width: p.w,
-            height: p.w * 0.45,
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.dur}s`,
-            ['--rot' as string]: `${p.rot}deg`,
-            ['--drift' as string]: `${p.drift}px`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function CheckeredFlag() {
-  const cols = 12;
-  const rows = 8;
-  return (
-    <div className="flag" aria-hidden>
-      {Array.from({ length: cols }, (_, c) => (
-        <div key={c} className="flag-col" style={{ animationDelay: `${-c * 0.09}s` }}>
-          {Array.from({ length: rows }, (_, r) => (
-            <span key={r} style={{ background: (c + r) % 2 ? '#f5f5f7' : '#0b0b0e' }} />
-          ))}
-        </div>
+    <div className="checker" aria-hidden>
+      {Array.from({ length: 24 }, (_, c) => (
+        <span key={c}>
+          <i style={{ background: c % 2 ? '#f5f5f7' : '#0a0a0c' }} />
+          <i style={{ background: c % 2 ? '#0a0a0c' : '#f5f5f7' }} />
+        </span>
       ))}
     </div>
   );
@@ -123,34 +85,34 @@ export function Chequered({ data }: { data: SessionData }) {
   }, [t, first]);
   useEffect(() => {
     if (!show) return;
-    const id = setTimeout(() => setShow(false), 7000);
+    const id = setTimeout(() => setShow(false), 8000);
     return () => clearTimeout(id);
   }, [show]);
   return (
     <AnimatePresence>
       {show && winner && (
-        <motion.div className="cheq-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShow(false)}>
-          <Confetti colors={[winner.color, '#ffffff', '#ffd60a', winner.color]} />
-          <motion.div initial={{ y: -60, rotate: -8, opacity: 0 }} animate={{ y: 0, rotate: -4, opacity: 1 }} transition={{ type: 'spring', stiffness: 140, damping: 14 }}>
-            <CheckeredFlag />
-          </motion.div>
-          <motion.div
-            className="cheq-card glass glass-strong"
-            style={{ ['--team' as string]: winner.color }}
-            initial={{ y: 60, scale: 0.9, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.35 }}
-          >
-            <Headshot driver={winner} size={84} />
+        <motion.div
+          className="cheq glass glass-strong"
+          style={{ ['--team' as string]: winner.color }}
+          initial={{ y: -30, opacity: 0, filter: 'blur(8px)' }}
+          animate={{ y: 0, opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+          exit={{ y: -20, opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+          onClick={() => setShow(false)}
+          role="status"
+        >
+          <CheckerStrip />
+          <div className="cheq-body">
+            <Headshot driver={winner} size={56} />
             <div>
-              <div className="eyebrow">Bandiera a scacchi · Vincitore</div>
+              <div className="label">Bandiera a scacchi · Vincitore</div>
               <div className="cheq-name">
-                {winner.first} <b>{winner.last}</b>
+                {winner.first} <b>{winner.last.toUpperCase()}</b>
               </div>
-              <div className="muted">{winner.team}</div>
+              <div className="cheq-team">{winner.team}</div>
             </div>
-            <span className="cheq-p1">P1</span>
-          </motion.div>
+            <span className="cheq-p1 num">P1</span>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -160,11 +122,11 @@ export function Chequered({ data }: { data: SessionData }) {
 // ---------------------------------------------------------------- track status banner
 
 type BannerKind = 'SC' | 'VSC' | 'RED' | 'GREEN';
-const BANNER: Record<BannerKind, { text: string; cls: string }> = {
-  SC: { text: 'Safety Car', cls: 'b-sc' },
-  VSC: { text: 'Virtual Safety Car', cls: 'b-vsc' },
-  RED: { text: 'Bandiera rossa', cls: 'b-red' },
-  GREEN: { text: 'Pista libera', cls: 'b-green' },
+const BANNER: Record<BannerKind, { text: string; sub: string; cls: string }> = {
+  SC: { text: 'Safety Car', sub: 'Safety Car in pista · sorpassi vietati', cls: 'b-sc' },
+  VSC: { text: 'Virtual Safety Car', sub: 'Delta di velocità obbligatorio', cls: 'b-vsc' },
+  RED: { text: 'Bandiera rossa', sub: 'Sessione sospesa', cls: 'b-red' },
+  GREEN: { text: 'Pista libera', sub: 'Bandiera verde · si torna a correre', cls: 'b-green' },
 };
 
 export function StatusBanner({ data }: { data: SessionData }) {
@@ -190,16 +152,18 @@ export function StatusBanner({ data }: { data: SessionData }) {
       {banner && (
         <motion.div
           key={banner.id}
-          className={`status-banner ${BANNER[banner.kind].cls}`}
-          initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 1 }}
-          animate={{ clipPath: 'inset(0 0% 0 0)' }}
-          exit={{ clipPath: 'inset(0 0 0 100%)' }}
-          transition={{ duration: 0.6, ease: [0.65, 0, 0.35, 1] }}
+          className={`status-banner glass glass-strong ${BANNER[banner.kind].cls}`}
+          initial={{ opacity: 0, y: -14, clipPath: 'inset(0 100% 0 0 round 14px)' }}
+          animate={{ opacity: 1, y: 0, clipPath: 'inset(0 0% 0 0 round 14px)' }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
           role="alert"
         >
-          <motion.span initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.25, duration: 0.5 }}>
-            {BANNER[banner.kind].text}
-          </motion.span>
+          <span className="sb-flag" />
+          <span className="sb-text">
+            <b>{BANNER[banner.kind].text}</b>
+            <span>{BANNER[banner.kind].sub}</span>
+          </span>
         </motion.div>
       )}
     </AnimatePresence>

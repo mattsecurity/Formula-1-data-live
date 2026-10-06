@@ -1,7 +1,7 @@
 .dgrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 12px;
 }
 .dcard {
   position: relative;
@@ -9,76 +9,106 @@
   flex-direction: column;
   justify-content: flex-end;
   height: 300px;
-  padding: 18px;
-  border-radius: var(--r-lg);
+  padding: 16px;
+  border-radius: 18px;
   overflow: hidden;
   text-align: left;
-  background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--team) 70%, transparent), transparent 60%),
-    linear-gradient(180deg, color-mix(in srgb, var(--team) 26%, #101015), #0d0d11 75%);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--team) 34%, #111115) 0%, #0f0f13 62%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
   transition: box-shadow 0.3s ease;
-  transform-style: preserve-3d;
+  isolation: isolate;
 }
-.dcard:hover .dcard-photo {
-  transform: translateZ(40px) scale(1.04);
+.dcard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--team);
 }
-.dcard-photo {
-  transition: transform 0.5s var(--spring);
+.dcard::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(180deg, transparent, rgba(8, 8, 11, 0.94) 70%);
+  z-index: 0;
 }
 .dcard:hover {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 24px 50px -24px color-mix(in srgb, var(--team) 70%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 .dcard-num {
   position: absolute;
-  top: -10px;
-  right: 10px;
-  font-size: 120px;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: -0.06em;
+  top: 6px;
+  left: 14px;
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
   color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.18);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.22);
   line-height: 1;
+  z-index: -1;
 }
 .dcard-photo {
   position: absolute;
-  top: 26px;
-  left: 50%;
-  translate: -50% 0;
-  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.45));
+  right: -12px;
+  bottom: 54px;
+  height: 230px;
+  width: auto;
+  max-width: 88%;
+  object-fit: contain;
+  object-position: bottom right;
+  transition: transform 0.6s var(--ease);
+  z-index: -1;
 }
-.dcard-photo > span {
-  border-radius: 50% !important;
+.dcard:hover .dcard-photo {
+  transform: scale(1.03) translateY(-2px);
+}
+.portrait-fallback {
+  display: grid;
+  place-items: end center;
+}
+.dcard .portrait-fallback {
+  position: absolute;
+  right: 16px;
+  bottom: 96px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  place-items: center;
+  background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--team) 80%, #fff 0%), #0b0b0f 75%);
+  font-size: 34px;
+  font-weight: 700;
+  color: #fff;
 }
 .dcard-info {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
 }
+.dcard-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
 .dcard-first {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--text-2);
 }
 .dcard-last {
-  font-size: 26px;
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
 }
 .dcard-team {
-  font-size: 12.5px;
-  color: var(--text-2);
-  margin-top: 4px;
-}
-.dcard-pts {
-  position: absolute;
-  top: 16px;
-  left: 16px;
   font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
+  color: var(--text-3);
+  margin-top: 3px;
 }
 
 .tgrid {
@@ -89,7 +119,7 @@
 .tcard {
   padding: 20px;
   overflow: hidden;
-  background: radial-gradient(100% 80% at 0% 0%, color-mix(in srgb, var(--team) 26%, transparent), transparent 60%), var(--surface);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--team) 18%, var(--surface)), var(--surface) 55%);
 }
 .tcard-head {
   display: flex;
@@ -145,7 +175,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  background: radial-gradient(90% 60% at 0% 0%, color-mix(in srgb, var(--team) 35%, transparent), transparent 70%), rgba(22, 22, 28, 0.86);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--team) 26%, rgba(18, 18, 22, 0.92)), rgba(14, 14, 18, 0.94) 55%);
 }
 .dsheet-close {
   position: absolute;
@@ -159,13 +189,26 @@
   gap: 24px;
   flex-wrap: wrap;
 }
+.dsheet-photo {
+  height: 170px;
+  width: auto;
+  object-fit: contain;
+}
+.dsheet .portrait-fallback {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  place-items: center;
+  background: var(--team);
+  font-size: 34px;
+  font-weight: 700;
+}
 .dsheet-num {
   position: absolute;
   right: 40px;
   top: -20px;
-  font-size: 160px;
-  font-weight: 800;
-  font-style: italic;
+  font-size: 140px;
+  font-weight: 700;
   letter-spacing: -0.06em;
   color: transparent;
   -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.12);

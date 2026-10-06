@@ -153,6 +153,13 @@ function raceStandings(data: SessionData, t: number, prev: number[], mode: Order
     const r = tmp[i];
     const lap = currentLapOf(data, r.d);
     const stint = stintAt(data.stints, r.num, lap);
+    let best: number | null = null;
+    let lastLap: number | null = null;
+    for (const l of data.lapsByDriver.get(r.num) ?? []) {
+      if (l.end == null || l.end > t || l.dur == null) continue;
+      lastLap = l.dur;
+      if (!l.pitOut && l.lap > 1 && (best == null || l.dur < best)) best = l.dur;
+    }
     const row: StandingRow = {
       num: r.num,
       pos: i + 1,
@@ -165,8 +172,8 @@ function raceStandings(data: SessionData, t: number, prev: number[], mode: Order
       tyreAge: stint ? stint.ageStart + Math.max(0, lap - stint.lapStart) : 0,
       pits: pitsDone(data, r.num, t),
       delta: beforeStart ? 0 : (gridPos.get(r.num) ?? i + 1) - (i + 1),
-      best: null,
-      lastLap: null,
+      best,
+      lastLap,
     };
     if (r.status === 'out') {
       row.gap = 'RIT';

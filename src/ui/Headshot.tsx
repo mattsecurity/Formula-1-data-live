@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { Driver } from '../model/types';
+import { headshotCandidates } from './headshotUrls';
 
 /** Driver portrait with a team-coloured monogram fallback. */
 export function Headshot({ driver, size = 40, ring = true }: { driver: Driver; size?: number; ring?: boolean }) {
-  const [failed, setFailed] = useState(false);
-  const showImg = driver.headshot && !failed;
+  const urls = headshotCandidates(driver.headshot);
+  const [idx, setIdx] = useState(0);
+  const showImg = idx < urls.length;
   return (
     <span
       style={{
@@ -21,11 +23,11 @@ export function Headshot({ driver, size = 40, ring = true }: { driver: Driver; s
     >
       {showImg ? (
         <img
-          src={driver.headshot}
+          src={urls[idx]}
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
-          onError={() => setFailed(true)}
+          onError={() => setIdx((v) => v + 1)}
           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
         />
       ) : (

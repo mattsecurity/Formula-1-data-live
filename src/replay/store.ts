@@ -16,8 +16,9 @@ export interface PlaybackState {
   showDrs: boolean;
   showTrails: boolean;
   showCorners: boolean;
+  showSpeedMap: boolean;
   orderMode: OrderMode;
-  gapMode: 'leader' | 'interval';
+  gapMode: 'leader' | 'interval' | 'last' | 'best';
   rotation: number;
   insightsOpen: boolean;
   set: (p: Partial<PlaybackState>) => void;
@@ -46,7 +47,8 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
   showNames: prefs.showNames ?? true,
   showDrs: prefs.showDrs ?? true,
   showTrails: prefs.showTrails ?? true,
-  showCorners: prefs.showCorners ?? false,
+  showCorners: prefs.showCorners ?? true,
+  showSpeedMap: false,
   orderMode: prefs.orderMode ?? 'live',
   gapMode: prefs.gapMode ?? 'interval',
   rotation: 0,

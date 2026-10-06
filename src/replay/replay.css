@@ -174,7 +174,7 @@
 
 .toasts {
   position: absolute;
-  top: 78px;
+  top: 150px;
   left: 50%;
   translate: -50% 0;
   display: flex;
@@ -188,10 +188,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
-  padding: 0 14px 0 6px;
-  border-radius: 999px;
-  font-size: 13.5px;
+  height: 32px;
+  padding: 0 12px 0 6px;
+  border-radius: 10px;
+  font-size: 12.5px;
 }
 .toast-badge {
   display: grid;
@@ -393,4 +393,31 @@
   font-size: 22px;
   font-weight: 750;
   letter-spacing: -0.03em;
+}
+.speed-legend {
+  position: absolute;
+  left: 50%;
+  bottom: 100px;
+  translate: -50% 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  border-radius: 12px;
+}
+.speed-scale {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+}
+.speed-scale span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.speed-scale i {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
 }

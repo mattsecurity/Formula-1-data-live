@@ -20,6 +20,9 @@ export interface StandingsView {
 
 let nextId = 1;
 
+/** Latest classification (driver number → position), read by the map renderer. */
+export const liveOrder = new Map<number, number>();
+
 /** Live classification at ~8 Hz, plus overtake detection between frames. */
 export function useStandings(data: SessionData): StandingsView {
   const t = useThrottledTime(120);
@@ -64,6 +67,8 @@ export function useStandings(data: SessionData): StandingsView {
     for (const [k, f] of flashes.current) if (f.until < now) flashes.current.delete(k);
     overtakes.current = overtakes.current.filter((o) => now - o.at < 5000);
     prevRef.current = { t, rows };
+    liveOrder.clear();
+    for (const r of rows) liveOrder.set(r.num, r.pos);
     return { rows, t, flashes: flashes.current, overtakes: overtakes.current };
   }, [data, t, orderMode]);
 }

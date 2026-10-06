@@ -60,8 +60,18 @@ export function LineChart({
   highlight,
   step,
   xInteger,
+  cursorX,
+  onCursor,
+  markers,
+  hideTip,
 }: {
   xInteger?: boolean;
+  /** controlled crosshair (for charts synchronised with each other) */
+  cursorX?: number | null;
+  onCursor?: (x: number | null) => void;
+  /** vertical reference markers, e.g. corners along a lap */
+  markers?: { x: number; label: string }[];
+  hideTip?: boolean;
   series: Series[];
   height?: number;
   xDomain?: [number, number];
@@ -78,7 +88,12 @@ export function LineChart({
   step?: boolean;
 }) {
   const [wrapRef, width] = useWidth<HTMLDivElement>();
-  const [hoverX, setHoverX] = useState<number | null>(null);
+  const [localHover, setLocalHover] = useState<number | null>(null);
+  const hoverX = cursorX !== undefined ? cursorX : localHover;
+  const setHoverX = (v: number | null) => {
+    if (onCursor) onCursor(v);
+    else setLocalHover(v);
+  };
   const clipId = `clip-${useId().replace(/:/g, '')}`;
   const pad = { l: 52, r: 16, t: 12, b: 30 };
   const innerW = Math.max(10, width - pad.l - pad.r);
@@ -221,6 +236,16 @@ export function LineChart({
             );
           })}
         </g>
+        {markers?.map((m, i) =>
+          m.x >= x0 && m.x <= x1 ? (
+            <g key={`m${i}`}>
+              <line x1={sx(m.x)} x2={sx(m.x)} y1={pad.t} y2={pad.t + innerH} stroke="rgba(255,255,255,0.07)" />
+              <text x={sx(m.x)} y={pad.t + 9} textAnchor="middle" fontSize={9} fontWeight={650} fill="rgba(235,235,245,0.4)">
+                {m.label}
+              </text>
+            </g>
+          ) : null,
+        )}
         {marker != null && marker >= x0 && marker <= x1 && (
           <line x1={sx(marker)} x2={sx(marker)} y1={pad.t} y2={pad.t + innerH} stroke="rgba(255,255,255,0.7)" strokeDasharray="3 3" />
         )}
@@ -228,7 +253,7 @@ export function LineChart({
           <line x1={sx(hoverX)} x2={sx(hoverX)} y1={pad.t} y2={pad.t + innerH} stroke="rgba(255,255,255,0.35)" />
         )}
       </svg>
-      {hoverX != null && hoverRows && hoverRows.length > 0 && (
+      {!hideTip && hoverX != null && hoverRows && hoverRows.length > 0 && (
         <div
           className="chart-tip"
           style={{

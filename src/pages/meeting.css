@@ -118,3 +118,30 @@
     grid-template-columns: 26px 3px 34px 1fr auto;
   }
 }
+
+.mt-country {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mt-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin: 22px 0 0;
+}
+.mt-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mt-stats dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mt-map {
+  width: 440px;
+  max-width: 100%;
+  height: auto;
+}
