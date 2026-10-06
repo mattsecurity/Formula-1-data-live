@@ -1,0 +1,213 @@
+.tm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 100%;
+  width: 320px;
+  padding: 2px;
+}
+.tm-card {
+  position: relative;
+  border-radius: var(--r-lg);
+  padding: 14px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--team) 22%, rgba(22, 22, 28, 0.9)), rgba(18, 18, 24, 0.92) 55%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 18px 40px -16px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.tm-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tm-name {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tm-team {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tm-pos {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.tm-car {
+  width: 100%;
+  height: auto;
+  margin: -4px 0 -8px;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
+}
+.tm-grid {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+}
+.tm-speed {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.tm-speed-val {
+  font-size: 40px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.tm-speed-unit {
+  font-size: 13px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.tm-gear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  gap: 2px;
+}
+.tm-gear b {
+  font-size: 22px;
+  line-height: 1;
+}
+.tm-drs {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 6px 9px;
+  border-radius: 8px;
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+.tm-drs.on {
+  color: #04140a;
+  background: var(--green);
+  box-shadow: 0 0 16px rgba(48, 209, 88, 0.6);
+}
+.tm-bar {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.tm-bar-label {
+  color: var(--text-3);
+  font-weight: 600;
+}
+.tm-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.tm-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.08s linear;
+}
+.tm-bar-val {
+  text-align: right;
+  color: var(--text-2);
+}
+.tm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--hairline);
+}
+.tm-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10.5px;
+}
+.tm-stats b {
+  font-size: 13px;
+}
+.tm-err {
+  margin: 0;
+  font-size: 11px;
+  color: var(--orange);
+}
+.tm-grid {
+  grid-template-columns: auto 1fr auto;
+}
+.gauge {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+.gauge-val {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.gauge-val b {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.gauge-val span {
+  font-size: 10px;
+  color: var(--text-3);
+}
+.tm-gear {
+  justify-self: center;
+  min-height: 46px;
+  overflow: hidden;
+}
+.tm-gear b {
+  font-size: 30px;
+  display: inline-block;
+}
+.shift {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 4px;
+  padding: 4px 0;
+}
+.shift i {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  transition: background 0.05s linear;
+}
+.shift.flash i {
+  animation: shiftFlash 0.16s steps(2) infinite;
+}
+@keyframes shiftFlash {
+  50% {
+    opacity: 0.2;
+  }
+}
+.tm-card {
+  animation: cardGlow 3s ease-in-out infinite alternate;
+}
+@keyframes cardGlow {
+  from {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+  }
+  to {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px color-mix(in srgb, var(--team) 35%, transparent),
+      0 18px 50px -16px color-mix(in srgb, var(--team) 45%, transparent);
+  }
+}

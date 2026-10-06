@@ -1,0 +1,112 @@
+.season-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.mgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.mcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 20px;
+  min-height: 250px;
+  overflow: hidden;
+  transition: transform 0.35s var(--spring), box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.mcard:hover {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 20px 40px -20px rgba(0, 0, 0, 0.8);
+}
+.mcard.status-next {
+  box-shadow: inset 0 0 0 1.5px rgba(255, 69, 58, 0.55);
+}
+.mcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mcard-round {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.mcard-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-2);
+}
+.mcard-status.s-live {
+  background: rgba(255, 69, 58, 0.2);
+  color: #ff8a80;
+}
+.mcard-status.s-next {
+  background: rgba(255, 159, 10, 0.18);
+  color: #ffc46b;
+}
+.mcard-circuit {
+  height: 96px;
+  margin: 10px 0 6px;
+  display: grid;
+  place-items: center;
+}
+.mcard-circuit img {
+  max-height: 96px;
+  max-width: 80%;
+  object-fit: contain;
+  opacity: 0.85;
+  filter: invert(1) brightness(1.6) contrast(1.2);
+  mix-blend-mode: screen;
+}
+.mcard-flag {
+  font-size: 24px;
+  line-height: 1;
+}
+.mcard h3 {
+  margin: 8px 0 4px;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.mcard p {
+  margin: 0;
+  font-size: 13.5px;
+}
+.mcard-chip {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  background: rgba(255, 159, 10, 0.16);
+  color: #ffc46b;
+}
+
+.mcard:hover .mcard-circuit img {
+  transform: scale(1.08) rotate(-2deg);
+  opacity: 1;
+}
+.mcard-circuit img {
+  transition: transform 0.6s var(--spring), opacity 0.3s ease;
+}
+.mcard.status-next::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.5);
+  animation: ringPulse 2.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ringPulse {
+  to {
+    box-shadow: 0 0 0 14px rgba(255, 69, 58, 0);
+  }
+}

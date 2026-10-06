@@ -1,0 +1,197 @@
+.dgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.dcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 300px;
+  padding: 18px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  text-align: left;
+  background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--team) 70%, transparent), transparent 60%),
+    linear-gradient(180deg, color-mix(in srgb, var(--team) 26%, #101015), #0d0d11 75%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition: box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+.dcard:hover .dcard-photo {
+  transform: translateZ(40px) scale(1.04);
+}
+.dcard-photo {
+  transition: transform 0.5s var(--spring);
+}
+.dcard:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 24px 50px -24px color-mix(in srgb, var(--team) 70%, transparent);
+}
+.dcard-num {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  font-size: 120px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.18);
+  line-height: 1;
+}
+.dcard-photo {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  translate: -50% 0;
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.45));
+}
+.dcard-photo > span {
+  border-radius: 50% !important;
+}
+.dcard-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.dcard-first {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.dcard-last {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.dcard-team {
+  font-size: 12.5px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+.dcard-pts {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.tgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+.tcard {
+  padding: 20px;
+  overflow: hidden;
+  background: radial-gradient(100% 80% at 0% 0%, color-mix(in srgb, var(--team) 26%, transparent), transparent 60%), var(--surface);
+}
+.tcard-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.tcard-head h3 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.tcard-car {
+  width: 100%;
+  height: auto;
+  margin: 8px 0 4px;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.5));
+}
+.tcard-drivers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tcard-driver {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: left;
+  font-size: 14px;
+}
+.tcard-driver:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.dsheet {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border-radius: var(--r-xl);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: radial-gradient(90% 60% at 0% 0%, color-mix(in srgb, var(--team) 35%, transparent), transparent 70%), rgba(22, 22, 28, 0.86);
+}
+.dsheet-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+.dsheet-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.dsheet-num {
+  position: absolute;
+  right: 40px;
+  top: -20px;
+  font-size: 160px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.12);
+  line-height: 1;
+  pointer-events: none;
+}
+.dsheet-car {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.55));
+}
+.dsheet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.dsheet-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+.dsheet-stats b {
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}

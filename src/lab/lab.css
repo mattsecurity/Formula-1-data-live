@@ -1,0 +1,123 @@
+.lab {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 20px 24px 80px;
+}
+.lab-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.lab-top {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+}
+.lab-map-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.lab-map {
+  width: 100%;
+  height: 380px;
+  display: block;
+}
+.lab-ghost {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 12px;
+}
+.lab-picks {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  max-height: 470px;
+}
+.lab-rank {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+.lab-row {
+  border-radius: 14px;
+  transition: background 0.2s ease;
+}
+.lab-row.is-sel {
+  background: color-mix(in srgb, var(--team) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team) 60%, transparent);
+}
+.lab-row-btn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20px 30px 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 14px;
+  text-align: left;
+  font-size: 14px;
+}
+.lab-row-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.lab-row select {
+  margin: 0 10px 8px 70px;
+  width: calc(100% - 80px);
+}
+.lab-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+.lab-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.lab-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lab-legend i {
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+}
+.lab-chart {
+  padding: 16px 16px 8px;
+}
+.lab-chart h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.lab-chart h3 .dim {
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 6px;
+}
+.lab-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 900px) {
+  .lab-top,
+  .lab-split {
+    grid-template-columns: 1fr;
+  }
+  .lab-map {
+    height: 300px;
+  }
+  .lab {
+    padding: 16px 16px 60px;
+  }
+}
