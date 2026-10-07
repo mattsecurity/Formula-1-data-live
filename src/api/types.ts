@@ -194,6 +194,8 @@ export interface RawCircuitInfo {
   y?: number[];
   rotation?: number;
   corners?: { number: number; letter?: string; angle?: number; trackPosition: { x: number; y: number } }[];
+  /** marshal sectors, each given by the position where it starts */
+  marshalSectors?: { number: number; trackPosition: { x: number; y: number } }[];
 }
 
 export type QueryValue = string | number | boolean;

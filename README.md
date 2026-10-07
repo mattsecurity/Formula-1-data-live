@@ -8,13 +8,16 @@ Una web app in stile Apple Pro (Liquid Glass, grafica da broadcast, tema scuro) 
 
 ### Replay della sessione
 - Mappa del circuito ricostruita dalla telemetria, con bordi pista, cordoli bianco-rossi nelle curve strette, corsia box, piazzole della griglia, linea del traguardo, settori S1/S2/S3, zone DRS con linea di attivazione, frecce del senso di marcia, scala in metri e curve numerate con il loro nome (es. Variante del Rettifilo, Eau Rouge, Copse, 130R).
+- **Vista 3D del circuito** (pulsante 2D/3D o tasto P): asfalto, cordoli, corsia box, zone DRS, linea del traguardo e dislivelli reali ricavati dall'altitudine della telemetria (accentuati per renderli visibili). Tre camere: **Orbita** (ruoti e zoomi liberamente), **Insegui** (dietro la monoposto selezionata o al leader) e **Dall'alto**. Clicca una monoposto per selezionarla.
+- **Bandiere per settore**: quando la direzione gara espone la gialla o la doppia gialla, il settore di commissari interessato si illumina sulla mappa (2D e 3D) con una bandierina che sventola. Con la bandiera rossa si colora tutto il tracciato. In basso, accanto ai controlli, una bandiera animata mostra sempre la situazione in pista (verde, gialla, doppia gialla, rossa, SC, VSC, scacchi) con il settore e la curva più vicina.
 - **Mappa velocità**: colora il tracciato in base alla velocità del giro di riferimento.
 - Quando zoomi, le monoposto diventano sagome viste dall'alto orientate nel senso di marcia. Le etichette mostrano posizione e sigla, come in TV.
 - Le monoposto si muovono in tempo reale con scie colorate. Puoi fare zoom e trascinare la mappa, e ruotare il circuito.
 - **Classifica live calcolata dalla posizione in pista**: cambia nell'istante del sorpasso, con distacchi live (dal leader o intervallo), frecce di posizioni guadagnate o perse, gomma e giri della gomma, PIT e RIT. In alternativa puoi usare l'ordine del cronometraggio ufficiale.
 - **Safety Car simulata** davanti al leader (entra in pista, guida il gruppo, rientra), come nell'originale.
-- Barra temporale con giri, periodi di SC, VSC e bandiera rossa, ritiri e pit stop dei piloti selezionati.
-- Controlli: play e pausa, ±10 s, velocità da 0,5× a 128×, ricomincia. Ci sono anche le scorciatoie da tastiera (Spazio, ←/→, ↑/↓, 1–9, R, D, L, T, C, I, F, Esc).
+- Barra temporale con giri, periodi di SC, VSC, bandiera rossa e gialle, ritiri e pit stop dei piloti selezionati.
+- Controlli: play e pausa, ±10 s, velocità da 0,5× a 128×, ricomincia. Ci sono anche le scorciatoie da tastiera (Spazio, ←/→, ↑/↓, 1–9, R, D, L, T, C, I, F, P, Esc).
+- **Link a un momento preciso**: aggiungi `?t=<secondi>` all'indirizzo del replay (es. `#/replay/990011?t=1110&view=3d` apre la demo di Monza in 3D durante una doppia gialla; `view=3d` è facoltativo).
 - **Telemetria di bordo** (fino a 3 piloti a confronto): velocità, marcia, RPM, stato del DRS (OFF/ELIG/OPEN), gas e freno, traccia degli ultimi 20 secondi, tempo del giro in corso, **delta live sul giro personale**, minisettori viola/verdi/gialli, gomma e soste. Con la **camera car** segui il pilota con lo zoom.
 - Torre dei tempi in stile TV, con colonna selezionabile (intervallo, distacco, ultimo giro, miglior giro) e il marcatore viola del giro più veloce.
 - Meteo in pista e messaggi della direzione gara in tempo reale.
@@ -77,7 +80,7 @@ src/
 ├── pages/      home, calendario, weekend, piloti, classifiche
 └── ui/         componenti di interfaccia (glass, grafici, icone, monoposto SVG)
 ```
-Tecnologie: React, TypeScript, Vite, Framer Motion e Canvas 2D.
+Tecnologie: React, TypeScript, Vite, Framer Motion, Canvas 2D e three.js (vista 3D, caricata solo quando serve).
 
 ### Come funziona la classifica live
 Ogni campione di posizione viene proiettato sul tracciato di riferimento, ricostruito da un giro pulito, e trasformato in "distanza di gara" (es. 23,47 giri). La classifica ordina i piloti per questa distanza in ogni istante. Una piccola tolleranza evita sfarfallii quando due auto sono affiancate. I distacchi in secondi si calcolano confrontando quando ciascuna auto è passata dallo stesso punto della pista.

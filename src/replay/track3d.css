@@ -1,0 +1,94 @@
+.t3d {
+  position: absolute;
+  inset: 0;
+}
+.t3d-host {
+  position: absolute;
+  inset: 0;
+}
+.t3d-host canvas {
+  display: block;
+}
+.t3d-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: grab;
+}
+.t3d-labels:active {
+  cursor: grabbing;
+}
+.t3d-tag {
+  pointer-events: none;
+  font: 650 10.5px -apple-system, 'Inter Variable', sans-serif;
+  color: #f5f5f7;
+  background: rgba(14, 14, 18, 0.86);
+  border-left: 3px solid var(--team, #888);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.t3d-tag.sel {
+  background: rgba(245, 245, 247, 0.96);
+  color: #000;
+}
+.t3d-sc {
+  --team: #ff9f0a;
+  color: #ff9f0a;
+}
+.t3d-corner {
+  pointer-events: none;
+  font: 600 10px -apple-system, 'Inter Variable', sans-serif;
+  color: rgba(235, 235, 245, 0.62);
+  white-space: nowrap;
+  text-shadow: 0 1px 3px #000;
+}
+.t3d-cams {
+  position: absolute;
+  left: 50%;
+  bottom: 104px;
+  translate: -50% 0;
+  z-index: 12;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+}
+.t3d-cams button {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.t3d-cams button[aria-pressed='true'] {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text);
+}
+.t3d-err {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  color: var(--text-2);
+}
+@media (max-width: 979px) {
+  .t3d-cams {
+    bottom: 150px;
+  }
+}
+.t3d-flag {
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  transform: translateY(-14px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+}
+.t3d-flag span {
+  font: 700 10px -apple-system, 'Inter Variable', sans-serif;
+  color: #ffd60a;
+  letter-spacing: 0.02em;
+}

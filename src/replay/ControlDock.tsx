@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState } from 'react';
 import { fmtClock, leaderLapStarts } from '../model/derive';
+import { sectorFlags } from '../model/flags';
 import type { SessionData } from '../model/types';
 import { Icon } from '../ui/Icon';
 import { SPEEDS, usePlayback, useThrottledTime } from './store';
+import { FlagStatus } from './FlagStatus';
 import './dock.css';
 
 function Timeline({ data }: { data: SessionData }) {
@@ -72,6 +74,14 @@ function Timeline({ data }: { data: SessionData }) {
             <span key={l.lap} className={`tl-tick ${l.lap % 10 === 0 ? 'major' : ''}`} style={{ left: pct(l.t) }} />
           ) : null,
         )}
+        {sectorFlags(data).map((f, i) => (
+          <span
+            key={`y${i}`}
+            className={`tl-yellow ${f.kind === 'DOUBLE YELLOW' ? 'dbl' : ''}`}
+            style={{ left: pct(f.start), width: `calc(${pct(f.end)} - ${pct(f.start)})` }}
+            title={`${f.kind === 'DOUBLE YELLOW' ? 'Doppia gialla' : 'Gialla'} · settore ${f.sector}`}
+          />
+        ))}
         {[...data.retiredAt.entries()].map(([num, rt]) => (
           <span key={num} className="tl-dot tl-dnf" style={{ left: pct(rt) }} title={`Ritiro ${data.byNum.get(num)?.code}`} />
         ))}
@@ -109,6 +119,7 @@ export function ControlDock({ data }: { data: SessionData }) {
 
   return (
     <div className="dock glass" role="toolbar" aria-label="Controlli di riproduzione">
+      <FlagStatus data={data} />
       <div className="dock-buttons">
         <button className="icon-btn" onClick={() => seek(startT)} aria-label="Ricomincia (R)" title="Ricomincia (R)">
           <Icon name="restart" />

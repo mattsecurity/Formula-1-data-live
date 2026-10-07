@@ -56,6 +56,7 @@ const MONZA = circuitById('it-1922')!;
 const MONZA_PTS: [number, number][] = [];
 for (let i = 0; i < MONZA.pts.length; i += 2) MONZA_PTS.push([MONZA.pts[i], MONZA.pts[i + 1]]);
 // official turn numbers at outline indices of the dataset
+const MARSHAL_SECTORS = 18;
 const MONZA_CORNERS: [string, number][] = [
   ['1', 5], ['2', 9], ['3', 22], ['4', 34], ['5', 36], ['6', 51], ['7', 58], ['8', 76], ['9', 81], ['10', 88], ['11', 105],
 ];
@@ -198,6 +199,12 @@ function sampleCircuit(c: Circuit, s: number) {
   };
 }
 
+/** Gentle synthetic elevation (metres) so the 3D view has some relief. */
+function demoElevation(c: Circuit, s: number) {
+  const f = (((s % c.L) + c.L) % c.L) / c.L;
+  return 6 * Math.sin(2 * Math.PI * f) + 2.5 * Math.sin(6 * Math.PI * f + 1);
+}
+
 function inDrs(c: Circuit, s: number) {
   const f = (((s % c.L) + c.L) % c.L) / c.L;
   return c.drs.some(([a, b]) => f >= a && f <= b);
@@ -299,11 +306,18 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
     const off = comp === 'SOFT' ? -0.006 : comp === 'MEDIUM' ? 0 : 0.005;
     return 1 + off + k * age;
   };
+  let earlyYellow = false;
   const leaderLap = () => Math.max(...cars.map((cr) => cr.s / c.L));
   for (let t = -150; t < 3600; t += dt) {
     const raceOn = t >= startT;
     // safety car control
     const lead = leaderLap();
+    if (!earlyYellow && lead > 3.6) {
+      earlyYellow = true;
+      rc(t, 'Flag', 'YELLOW IN TRACK SECTOR 14', { flag: 'YELLOW', scope: 'Sector', sector: 14 });
+      rc(t + 28, 'Flag', 'CLEAR IN TRACK SECTOR 14', { flag: 'CLEAR', scope: 'Sector', sector: 14 });
+      rc(t + 2, 'Other', 'TRACK LIMITS - TURN 11 - CAR 31 (OCO) - LAP DELETED', { driver_number: 31 });
+    }
     if (scDeployed == null && lead > scStart.lap) {
       scDeployed = t;
       rc(t, 'SafetyCar', 'SAFETY CAR DEPLOYED', { lap_number: Math.ceil(lead) });
@@ -362,6 +376,9 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
       if (car.retireAt != null && lapF >= car.retireAt && !car.retired) {
         car.retired = true;
         rc(t + 2, 'Other', `CAR ${car.num} (${car.code}) STOPPED ON TRACK`, { driver_number: car.num, lap_number: car.lap });
+        const sec = Math.floor((sNorm / c.L) * MARSHAL_SECTORS) + 1;
+        rc(t + 3, 'Flag', `DOUBLE YELLOW IN TRACK SECTOR ${sec}`, { flag: 'DOUBLE YELLOW', scope: 'Sector', sector: sec });
+        rc(t + 80, 'Flag', `CLEAR IN TRACK SECTOR ${sec}`, { flag: 'CLEAR', scope: 'Sector', sector: sec });
       }
       if (car.retired) {
         vt = 0;
@@ -449,7 +466,7 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
         const sm = sampleCircuit(c, car.s);
         const x = (sm.x + sm.nx * car.offset) * 10;
         const y = (sm.y + sm.ny * car.offset) * 10;
-        out.location.push({ ...base, driver_number: car.num, date: isoAt(ms + rand() * 30), x: Math.round(x), y: Math.round(y), z: 0 });
+        out.location.push({ ...base, driver_number: car.num, date: isoAt(ms + rand() * 30), x: Math.round(x), y: Math.round(y), z: Math.round(demoElevation(c, car.s) * 10) });
         const kmh = Math.round(car.v * 3.6);
         const accel = car.v - car.lastSpeed;
         out.car_data.push({
@@ -532,7 +549,12 @@ function simulateQuali(c: Circuit): Record<string, Row[]> {
   const base = { meeting_key: DEMO_MEETING_KEY, session_key: DEMO_QUALI_KEY };
   const T0 = QUALI_START;
   const best = new Map<number, number>();
-  out.race_control.push({ ...base, date: isoAt(T0), category: 'Flag', message: 'GREEN LIGHT - PIT EXIT OPEN', flag: 'GREEN', scope: 'Track', sector: null, driver_number: null, lap_number: null });
+  const qrc = (t: number, message: string, flag: string | null, scope: string | null, sector: number | null = null) =>
+    out.race_control.push({ ...base, date: isoAt(T0 + t * 1000), category: 'Flag', message, flag, scope, sector, driver_number: null, lap_number: null });
+  qrc(0, 'GREEN LIGHT - PIT EXIT OPEN', 'GREEN', 'Track');
+  qrc(752, 'YELLOW IN TRACK SECTOR 6', 'YELLOW', 'Sector', 6);
+  qrc(760, 'RED FLAG', 'RED', 'Track');
+  qrc(880, 'GREEN LIGHT - PIT EXIT OPEN', 'GREEN', 'Track');
   DRIVERS.forEach(([num], idx) => {
     const pace = 1 + idx * 0.0019 + rand() * 0.005;
     const runs = [60 + rand() * 300, 900 + rand() * 250];
@@ -566,7 +588,7 @@ function simulateQuali(c: Circuit): Record<string, Row[]> {
           if (t >= next) {
             next += 0.27;
             const off = s < 0 ? 30 : 0;
-            out.location.push({ ...base, driver_number: num, date: isoAt(T0 + t * 1000), x: Math.round((sm.x + sm.nx * off) * 10), y: Math.round((sm.y + sm.ny * off) * 10), z: 0 });
+            out.location.push({ ...base, driver_number: num, date: isoAt(T0 + t * 1000), x: Math.round((sm.x + sm.nx * off) * 10), y: Math.round((sm.y + sm.ny * off) * 10), z: Math.round(demoElevation(c, s) * 10) });
             const kmh = Math.round(v * 3.6);
             out.car_data.push({ ...base, driver_number: num, date: isoAt(T0 + t * 1000 + 10), speed: kmh, n_gear: gearFor(kmh), rpm: Math.round(9800 + ((kmh % 40) / 40) * 2200), throttle: v < vt - 0.5 ? 100 : v > vt + 0.5 ? 0 : 60, brake: v > vt + 1 ? 100 : 0, drs: factor === 1 && inDrs(c, s) ? 12 : 8 });
           }
@@ -650,6 +672,10 @@ export class DemoSource implements DataSource {
         number: Number(num),
         trackPosition: { x: Math.round(MONZA_PTS[idx][0] * 10), y: Math.round(MONZA_PTS[idx][1] * 10) },
       })),
+      marshalSectors: Array.from({ length: MARSHAL_SECTORS }, (_, i) => {
+        const idx = Math.round((i / MARSHAL_SECTORS) * MONZA_PTS.length) % MONZA_PTS.length;
+        return { number: i + 1, trackPosition: { x: Math.round(MONZA_PTS[idx][0] * 10), y: Math.round(MONZA_PTS[idx][1] * 10) } };
+      }),
     };
   }
 

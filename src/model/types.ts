@@ -45,6 +45,8 @@ export interface DriverTrack {
   y: Float32Array;
   /** Race distance in laps (1.5 = halfway round lap 2), unwrapped & calibrated. */
   d: Float64Array;
+  /** elevation (same units as x/y), when the feed provides it */
+  z?: Float32Array;
 }
 
 export interface Lap {
@@ -162,6 +164,12 @@ export interface ReferencePath {
   pitLane: { x: Float32Array; y: Float32Array } | null;
   /** starting grid slots (race) */
   grid: { pos: number; x: number; y: number; angle: number }[];
+  /** elevation at each vertex (world units), if known */
+  z: Float32Array | null;
+  /** marshal sectors: number and lap fraction where each one starts */
+  marshal: { num: number; from: number }[];
+  /** true when marshal sector positions are estimated rather than official */
+  marshalEstimated: boolean;
   /** DRS zones as [startFraction, endFraction] of a lap. */
   drs: [number, number][];
   /** Sector boundaries as lap fractions (end of S1, end of S2). */
