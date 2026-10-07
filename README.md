@@ -23,7 +23,7 @@ Una web app in stile Apple Pro (Liquid Glass, grafica da broadcast, tema scuro) 
 - Meteo in pista e messaggi della direzione gara in tempo reale.
 
 ### Animazioni
-- Semaforo di partenza a 5 luci prima del via.
+- Semaforo di partenza come in TV: portale con 5 pod e lenti a LED, luci che si accendono una alla volta con un lampo e un riflesso rosso sulla scena, attesa casuale e "Luci spente" con dissolvenza verso la gara.
 - Sottopancia in stile TV per bandiera a scacchi (con il vincitore), Safety Car, VSC, bandiera rossa e pista libera.
 - Notifiche per sorpassi, giro più veloce, pit stop e ritiri. Un segnale sulla mappa evidenzia ogni sorpasso.
 - Tracciati reali che si disegnano con le monoposto in movimento, transizioni tra le pagine e riflessi del vetro che seguono il cursore.
