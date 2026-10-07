@@ -6,36 +6,51 @@ import type { Driver } from '../model/types';
 import { teamAccent } from './livery';
 import { SideCar } from './SideCar';
 import { TopCar } from './TopCar';
+import { carPhotoUrl } from './carPhotos';
 import './car-poster.css';
 
 /**
- * Studio "spec sheet" of a driver's car: plan view above, side view below,
- * name, team and season — like a team launch poster. Pure vector, in the
- * team colours, without sponsor or championship marks.
+ * Studio "spec sheet" of a driver's car with name, team and season — like a
+ * team launch poster. Shows the real-livery render when one exists for the
+ * season, otherwise the vector plan + side views in the team colours.
  */
 export function CarPoster({ d, year, className }: { d: Driver; year?: number; className?: string }) {
   const accent = teamAccent(d.team, d.color);
+  const photo = carPhotoUrl(year, d.num);
   return (
     <figure className={`car-poster ${className ?? ''}`} style={{ ['--team' as string]: d.color }} aria-label={`Monoposto di ${d.full}, ${d.team}`}>
       <span className="cp-bignum num" aria-hidden>
         {d.num}
       </span>
-      <motion.div
-        className="cp-top"
-        initial={{ x: '-30%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-      >
-        <TopCar color={d.color} accent={accent} number={d.num} title={`Monoposto ${d.team} vista dall'alto`} />
-      </motion.div>
-      <motion.div
-        className="cp-side"
-        initial={{ x: '30%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
-      >
-        <SideCar color={d.color} accent={accent} number={d.num} name={d.last} title={`Monoposto ${d.team} vista di lato`} />
-      </motion.div>
+      {photo ? (
+        <motion.div
+          className="cp-photo"
+          initial={{ x: '30%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+        >
+          <img src={photo} alt={`Monoposto ${d.team} di ${d.full} vista di lato`} draggable={false} />
+        </motion.div>
+      ) : (
+        <>
+          <motion.div
+            className="cp-top"
+            initial={{ x: '-30%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+          >
+            <TopCar color={d.color} accent={accent} number={d.num} title={`Monoposto ${d.team} vista dall'alto`} />
+          </motion.div>
+          <motion.div
+            className="cp-side"
+            initial={{ x: '30%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
+          >
+            <SideCar color={d.color} accent={accent} number={d.num} name={d.last} title={`Monoposto ${d.team} vista di lato`} />
+          </motion.div>
+        </>
+      )}
       <motion.figcaption initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}>
         <span className="cp-swatch" />
         <span className="cp-name">

@@ -41,6 +41,18 @@
   width: 96%;
   height: auto;
 }
+.cp-photo {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 8px;
+}
+.cp-photo img {
+  width: 98%;
+  height: auto;
+  filter: drop-shadow(0 16px 14px rgba(0, 0, 0, 0.3));
+  user-select: none;
+}
 .car-poster figcaption {
   display: flex;
   flex-direction: column;
