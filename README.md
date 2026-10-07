@@ -39,7 +39,7 @@ L'equivalente delle qualifiche dell'originale: confronta i giri di più piloti c
 ### Altre pagine
 - **Calendario** delle stagioni dal 2023 a oggi, con il tracciato reale di ogni circuito.
 - **Weekend**: mappa e dati del circuito (lunghezza, primo GP, altitudine), tutte le sessioni e la classifica.
-- **Piloti e Team**: ritratti ufficiali e monoposto vista dall'alto nei colori del team.
+- **Piloti e Team**: ritratti ufficiali e, aprendo un pilota, la **scheda della sua monoposto** in stile poster di presentazione: vista dall'alto e di lato nei colori del team, con numero e nome. Si apre anche dal replay cliccando l'auto nel pannello telemetria. Le auto sono illustrazioni vettoriali, senza loghi di sponsor o della F1.
 - **Classifiche** piloti e costruttori.
 - **Demo offline**: un Gran Premio d'Italia simulato sul vero tracciato di Monza (sorpassi, Safety Car, pit stop, ritiro) e una qualifica, utili per provare tutto anche senza connessione. Se sei online, la demo usa le foto ufficiali dei piloti.
 
