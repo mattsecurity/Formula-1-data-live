@@ -9,6 +9,7 @@ import { Flag } from '../ui/Flag';
 import { Portrait } from '../ui/Portrait';
 import { TopCar } from '../ui/TopCar';
 import { CarPoster } from '../ui/CarPoster';
+import { carPhotoUrl } from '../ui/carPhotos';
 import { ErrorCard } from '../ui/ErrorCard';
 import { Headshot } from '../ui/Headshot';
 import { Icon } from '../ui/Icon';
@@ -177,7 +178,11 @@ export default function DriversPage() {
                 <span className="dim tabular">{t.drivers.reduce((a, d) => a + (champ.get(d.num)?.points ?? 0), 0)} pt</span>
               </div>
               <motion.div initial={{ x: -80, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 + i * 0.04 }}>
-                <TopCar color={t.drivers[0].color} className="tcard-car" title={`Monoposto ${t.team}`} />
+                {carPhotoUrl(y, t.drivers[0].num) ? (
+                  <img src={carPhotoUrl(y, t.drivers[0].num)} className="tcard-car tcard-photo" alt={`Monoposto ${t.team}`} draggable={false} />
+                ) : (
+                  <TopCar color={t.drivers[0].color} className="tcard-car" title={`Monoposto ${t.team}`} />
+                )}
               </motion.div>
               <div className="tcard-drivers">
                 {t.drivers.map((d) => (

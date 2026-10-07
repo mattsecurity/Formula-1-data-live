@@ -10,6 +10,7 @@ import { Headshot } from '../ui/Headshot';
 import { Icon } from '../ui/Icon';
 import { CarPosterModal } from '../ui/CarPoster';
 import { TopCar } from '../ui/TopCar';
+import { carPhotoUrl } from '../ui/carPhotos';
 import { usePlayback, useThrottledTime } from './store';
 import './telemetry.css';
 
@@ -166,6 +167,7 @@ function DriverCard({ data, num, row }: { data: SessionData; num: number; row?: 
   const drsState = !s ? '—' : s.drs >= 10 ? 'OPEN' : s.drs === 8 ? 'ELIG' : 'OFF';
   const rpmF = s ? Math.max(0, Math.min(1, (s.rpm - 4000) / 9000)) : 0;
   const [poster, setPoster] = useState(false);
+  const photo = carPhotoUrl(data.meta.year, d.num);
 
   return (
     <motion.article
@@ -194,7 +196,11 @@ function DriverCard({ data, num, row }: { data: SessionData; num: number; row?: 
       </header>
 
       <button className="tm-car-btn" onClick={() => setPoster(true)} aria-label={`Scheda della monoposto di ${d.full}`} title="Scheda monoposto">
-        <TopCar color={d.color} compound={row?.compound !== 'UNKNOWN' ? row?.compound : undefined} number={d.num} className="tm-car" title={`Monoposto ${d.team}`} />
+        {photo ? (
+          <img src={photo} className="tm-car tm-car-photo" alt={`Monoposto ${d.team} di ${d.full}`} draggable={false} />
+        ) : (
+          <TopCar color={d.color} compound={row?.compound !== 'UNKNOWN' ? row?.compound : undefined} number={d.num} className="tm-car" title={`Monoposto ${d.team}`} />
+        )}
         <span className="tm-car-hint">Scheda monoposto</span>
       </button>
       <AnimatePresence>{poster && <CarPosterModal d={d} year={data.meta.year} onClose={() => setPoster(false)} />}</AnimatePresence>

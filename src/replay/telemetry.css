@@ -70,6 +70,14 @@
   height: auto;
   margin: -2px 0;
 }
+.tm-car-photo {
+  display: block;
+  aspect-ratio: 4.2 / 1;
+  object-fit: contain;
+  margin: 4px 0;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.55));
+  user-select: none;
+}
 .tm-read {
   display: grid;
   grid-template-columns: 1.3fr 0.8fr 1.2fr 0.9fr;

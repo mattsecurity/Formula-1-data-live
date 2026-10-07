@@ -14,7 +14,9 @@ const LapLabPage = lazy(() => import('./lab/LapLabPage'));
 
 function ScrollTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo({ top: 0 }), [pathname]);
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [pathname]);
   return null;
 }
 
