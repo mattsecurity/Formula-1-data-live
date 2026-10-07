@@ -1,0 +1,177 @@
+.dock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  width: min(980px, calc(100vw - 32px));
+}
+.dock-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.dock-play {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #000;
+}
+.dock-play:hover {
+  background: #fff;
+}
+.dock-tl {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.dock-time {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 44px;
+  text-align: center;
+}
+.speed {
+  display: flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(118, 118, 128, 0.22);
+  height: 36px;
+  padding: 0 2px;
+}
+.icon-btn.sm {
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  font-weight: 500;
+}
+.speed-val {
+  min-width: 40px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tl {
+  position: relative;
+  flex: 1;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+}
+.tl-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  transition: height 0.2s var(--ease);
+}
+.tl:hover .tl-track {
+  height: 10px;
+  border-radius: 5px;
+}
+.tl-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.9));
+  border-radius: inherit;
+}
+.tl-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  mix-blend-mode: normal;
+}
+.tl-sc {
+  background: rgba(255, 214, 10, 0.75);
+}
+.tl-vsc {
+  background: repeating-linear-gradient(135deg, rgba(255, 214, 10, 0.7) 0 3px, rgba(255, 214, 10, 0.25) 3px 6px);
+}
+.tl-red {
+  background: rgba(255, 69, 58, 0.85);
+}
+.tl-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+.tl-tick.major {
+  background: rgba(0, 0, 0, 0.7);
+}
+.tl-dot {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  z-index: 3;
+}
+.tl-dnf {
+  background: var(--red);
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.6);
+}
+.tl-pit {
+  box-shadow: 0 0 0 1.5px #fff;
+}
+.tl-knob {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 4;
+  transition: transform 0.2s var(--spring);
+}
+.tl:active .tl-knob {
+  transform: scale(1.25);
+}
+.tl-hover {
+  position: absolute;
+  bottom: 34px;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .dock {
+    flex-wrap: wrap;
+    border-radius: 26px;
+    justify-content: space-between;
+  }
+  .dock-tl {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+.tl:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+.tl:focus:not(:focus-visible) {
+  outline: none;
+}

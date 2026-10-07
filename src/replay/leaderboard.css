@@ -1,0 +1,191 @@
+.tw {
+  display: flex;
+  flex-direction: column;
+  width: 336px;
+  max-height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.tw-compact {
+  width: 250px;
+}
+.tw-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 10px 8px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+.tw-cols {
+  display: flex;
+  gap: 1px;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(118, 118, 128, 0.18);
+}
+.tw-cols button {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.tw-cols button[aria-pressed='true'] {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text);
+}
+.tw-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 4px 6px;
+  flex: 1;
+  min-height: 0;
+}
+.tw-row {
+  position: relative;
+}
+.tw-btn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20px 3px 38px 26px auto 1fr 40px 14px;
+  align-items: center;
+  gap: 7px;
+  height: 29px;
+  padding: 0 8px 0 2px;
+  border-radius: 7px;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+.tw-compact .tw-btn {
+  grid-template-columns: 20px 3px 38px 26px auto 1fr;
+}
+.tw-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.tw-row.is-sel .tw-btn {
+  background: rgba(255, 255, 255, 0.12);
+}
+.tw-row.is-out {
+  opacity: 0.4;
+}
+.tw-row:nth-child(odd) .tw-btn {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.018));
+}
+.tw-pos {
+  font-size: 12px;
+  font-weight: 650;
+  text-align: right;
+  color: var(--text-2);
+}
+.tw-bar {
+  width: 3px;
+  height: 15px;
+  border-radius: 1px;
+  background: var(--team);
+}
+.tw-code {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.tw-delta {
+  font-size: 9.5px;
+  font-weight: 650;
+}
+.tw-delta .pos {
+  color: var(--green);
+}
+.tw-delta .neg {
+  color: var(--red);
+}
+.tw-flags {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tw-tag {
+  font-size: 8.5px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.tw-pit {
+  background: rgba(10, 132, 255, 0.2);
+  color: #6cb8ff;
+}
+.tw-out {
+  background: rgba(255, 69, 58, 0.2);
+  color: #ff8a80;
+}
+.tw-fin {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+.tw-fl {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--purple);
+  box-shadow: 0 0 8px rgba(191, 90, 242, 0.7);
+}
+.tw-val {
+  font-size: 12px;
+  color: var(--text-2);
+  text-align: right;
+  white-space: nowrap;
+}
+.tw-val.purple {
+  color: var(--purple);
+  font-weight: 650;
+}
+.tw-tyre {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.tw-tyre i {
+  font-style: normal;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: grid;
+  place-items: center;
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #fff;
+  background: #0c0c0e;
+}
+.tw-pits {
+  font-size: 10.5px;
+  color: var(--text-3);
+  text-align: right;
+}
+.tw-row.up .tw-btn {
+  animation: twUp 2.2s ease-out;
+}
+.tw-row.down .tw-btn {
+  animation: twDown 2.2s ease-out;
+}
+.tw-row.up .tw-pos {
+  color: var(--green);
+}
+@keyframes twUp {
+  0%,
+  25% {
+    background: rgba(48, 209, 88, 0.2);
+  }
+}
+@keyframes twDown {
+  0%,
+  25% {
+    background: rgba(255, 69, 58, 0.14);
+  }
+}

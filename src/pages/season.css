@@ -1,0 +1,115 @@
+.season-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.mgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.mcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px 18px;
+  min-height: 268px;
+  overflow: hidden;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s var(--ease);
+}
+.mcard:hover {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  transform: translateY(-2px);
+}
+.mcard.status-next {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+.mcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mcard-round {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+}
+.mcard-status {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.mcard-status.s-live {
+  color: var(--red);
+}
+.mcard-status.s-next {
+  color: var(--text);
+}
+.mcard-circuit {
+  height: 120px;
+  margin: 8px 0 10px;
+  display: grid;
+  place-items: center;
+}
+.mcard-circuit svg {
+  width: 100%;
+  height: 120px;
+  transition: transform 0.6s var(--ease);
+}
+.mcard:hover .mcard-circuit svg {
+  transform: scale(1.04);
+}
+.mcard-circuit img {
+  max-height: 110px;
+  max-width: 80%;
+  object-fit: contain;
+  opacity: 0.85;
+  filter: invert(1) brightness(1.6);
+  mix-blend-mode: screen;
+}
+.mcard-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.mcard-chip {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-2);
+}
+.mcard h3 {
+  margin: 8px 0 4px;
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+.mcard p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.mcard-len {
+  position: absolute;
+  top: 44px;
+  right: 18px;
+  font-size: 10.5px;
+  color: var(--text-3);
+}

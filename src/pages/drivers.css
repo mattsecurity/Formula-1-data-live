@@ -1,0 +1,240 @@
+.dgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 12px;
+}
+.dcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 300px;
+  padding: 16px;
+  border-radius: 18px;
+  overflow: hidden;
+  text-align: left;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--team) 34%, #111115) 0%, #0f0f13 62%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition: box-shadow 0.3s ease;
+  isolation: isolate;
+}
+.dcard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--team);
+}
+.dcard::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(180deg, transparent, rgba(8, 8, 11, 0.94) 70%);
+  z-index: 0;
+}
+.dcard:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.dcard-num {
+  position: absolute;
+  top: 6px;
+  left: 14px;
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.22);
+  line-height: 1;
+  z-index: -1;
+}
+.dcard-photo {
+  position: absolute;
+  right: -12px;
+  bottom: 54px;
+  height: 230px;
+  width: auto;
+  max-width: 88%;
+  object-fit: contain;
+  object-position: bottom right;
+  transition: transform 0.6s var(--ease);
+  z-index: -1;
+}
+.dcard:hover .dcard-photo {
+  transform: scale(1.03) translateY(-2px);
+}
+.portrait-fallback {
+  display: grid;
+  place-items: end center;
+}
+.dcard .portrait-fallback {
+  position: absolute;
+  right: 16px;
+  bottom: 96px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  place-items: center;
+  background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--team) 80%, #fff 0%), #0b0b0f 75%);
+  font-size: 34px;
+  font-weight: 700;
+  color: #fff;
+}
+.dcard-info {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+.dcard-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.dcard-first {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.dcard-last {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+.dcard-team {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.tgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+.tcard {
+  padding: 20px;
+  overflow: hidden;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--team) 18%, var(--surface)), var(--surface) 55%);
+}
+.tcard-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.tcard-head h3 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.tcard-car {
+  width: 100%;
+  height: auto;
+  margin: 8px 0 4px;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.5));
+}
+.tcard-drivers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tcard-driver {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: left;
+  font-size: 14px;
+}
+.tcard-driver:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.dsheet {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border-radius: var(--r-xl);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--team) 26%, rgba(18, 18, 22, 0.92)), rgba(14, 14, 18, 0.94) 55%);
+}
+.dsheet-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+.dsheet-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.dsheet-photo {
+  height: 170px;
+  width: auto;
+  object-fit: contain;
+}
+.dsheet .portrait-fallback {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  place-items: center;
+  background: var(--team);
+  font-size: 34px;
+  font-weight: 700;
+}
+.dsheet-num {
+  position: absolute;
+  right: 40px;
+  top: -20px;
+  font-size: 140px;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.12);
+  line-height: 1;
+  pointer-events: none;
+}
+.dsheet-car {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.55));
+}
+.dsheet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.dsheet-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+.dsheet-stats b {
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
