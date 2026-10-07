@@ -1,0 +1,343 @@
+/* ---------------- Safety Car / VSC graphics */
+.nx-edge {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  --amber: 255, 184, 0;
+  box-shadow: inset 0 0 0 1.5px rgba(var(--amber), 0.55), inset 0 0 90px rgba(var(--amber), 0.1);
+  animation: nxBreath 1.6s ease-in-out infinite;
+}
+.nx-edge.is-vsc {
+  animation-duration: 2.4s;
+  box-shadow: inset 0 0 0 1px rgba(var(--amber), 0.45), inset 0 0 70px rgba(var(--amber), 0.07);
+}
+@keyframes nxBreath {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.nx-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(60% 50% at 50% 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.15) 70%, transparent);
+}
+.nx-flash {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 160px 30px rgba(255, 184, 0, 0.45);
+  opacity: 0;
+  animation: nxFlash 1.5s ease-out 1;
+}
+@keyframes nxFlash {
+  0%,
+  40%,
+  80% {
+    opacity: 0;
+  }
+  10%,
+  55% {
+    opacity: 1;
+  }
+}
+.nx-hazard {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: repeating-linear-gradient(-45deg, #ffb800 0 14px, #0a0a0c 14px 28px);
+  background-size: 39.6px 100%;
+  animation: nxStripes 0.6s linear infinite;
+  box-shadow: 0 0 22px rgba(255, 184, 0, 0.45);
+}
+.nx-hazard.top {
+  top: 0;
+  transform-origin: left center;
+}
+.nx-hazard.bottom {
+  bottom: 0;
+  transform-origin: right center;
+  animation-direction: reverse;
+}
+@keyframes nxStripes {
+  to {
+    background-position: 39.6px 0;
+  }
+}
+
+.nx-card {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  max-width: min(760px, calc(100vw - 32px));
+  padding: 22px 30px 22px 22px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(28, 28, 32, 0.92), rgba(12, 12, 15, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 2px solid #ffb800;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 184, 0, 0.12);
+}
+.nx-stage {
+  position: relative;
+  flex: none;
+  width: 230px;
+  height: 110px;
+  display: grid;
+  place-items: center;
+  perspective: 600px;
+}
+.nx-car {
+  width: 220px;
+  height: 96px;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.7));
+}
+.nx-lb {
+  fill: #3a2a00;
+}
+.nx-lb-a {
+  animation: nxLightA 0.5s linear infinite;
+}
+.nx-lb-b {
+  animation: nxLightA 0.5s linear infinite -0.25s;
+}
+@keyframes nxLightA {
+  0%,
+  48% {
+    fill: #ffb800;
+    filter: drop-shadow(0 0 6px #ffb800) drop-shadow(0 0 14px rgba(255, 184, 0, 0.8));
+  }
+  52%,
+  100% {
+    fill: #3a2a00;
+    filter: none;
+  }
+}
+
+.nx-speedlines {
+  position: absolute;
+  inset: 18px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.nx-speedlines i {
+  display: block;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 214, 10, 0.9));
+  transform-origin: right center;
+}
+
+.nx-led {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #050506;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), inset 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+.nx-on {
+  animation: nxBlink 1.2s linear infinite;
+}
+@keyframes nxBlink {
+  0%,
+  72% {
+    opacity: 1;
+  }
+  74%,
+  98% {
+    opacity: 0.08;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.nx-copy {
+  min-width: 0;
+}
+.nx-kicker {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(235, 235, 245, 0.55);
+}
+.nx-title {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 4px 0 6px;
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #ffd60a;
+  line-height: 1.05;
+}
+.nx-title {
+  column-gap: 0.32em;
+}
+.nx-word {
+  display: inline-flex;
+  white-space: nowrap;
+}
+.nx-word span {
+  display: inline-block;
+}
+.nx-sub {
+  font-size: 13px;
+  color: var(--text-2);
+  max-width: 420px;
+}
+.nx-delta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(48, 209, 88, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(48, 209, 88, 0.35);
+}
+.nx-delta span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(235, 235, 245, 0.6);
+}
+.nx-delta b {
+  font-size: 20px;
+  font-weight: 750;
+  color: #30d158;
+}
+
+.nx-cue {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 36;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 14px;
+  overflow: hidden;
+  pointer-events: none;
+  min-width: 320px;
+  border-left: 3px solid #ffb800;
+}
+.nx-cue-lights {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 4px 0 14px;
+}
+.nx-cue-lights i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ffb800;
+  box-shadow: 0 0 10px #ffb800;
+  animation: nxLightsOff 1.6s ease-in forwards;
+}
+.nx-cue-lights i + i {
+  animation-delay: 0.15s;
+}
+@keyframes nxLightsOff {
+  0%,
+  20%,
+  40%,
+  60% {
+    opacity: 1;
+  }
+  10%,
+  30%,
+  50% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0.15;
+    box-shadow: none;
+    background: #4a3a10;
+  }
+}
+.nx-cue-text {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 22px 11px 10px;
+}
+.nx-cue-text b {
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd60a;
+}
+.nx-cue-text span {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.nx-sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+  overflow: hidden;
+}
+.nx-sweep i,
+.nx-sweep b {
+  position: absolute;
+  left: 0;
+  width: 30vw;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, #30d158, transparent);
+  box-shadow: 0 0 24px 4px rgba(48, 209, 88, 0.6);
+}
+.nx-sweep i {
+  top: 0;
+}
+.nx-sweep b {
+  bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .nx-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px;
+  }
+  .nx-stage {
+    width: 100%;
+    height: 90px;
+  }
+  .nx-car {
+    width: 180px;
+    height: 80px;
+  }
+  .nx-cue {
+    min-width: 0;
+    width: calc(100vw - 32px);
+    top: 130px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-edge,
+  .nx-hazard,
+  .nx-flash,
+  .nx-on,
+  .nx-lb-a,
+  .nx-lb-b {
+    animation: none;
+  }
+}

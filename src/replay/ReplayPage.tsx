@@ -26,6 +26,7 @@ import { SPEED_LEGEND } from './trackArt';
 import { useSession } from './useSession';
 import { useStandings } from './useStandings';
 import { Chequered, EventFeed, StartLights, StatusBanner } from './Events';
+import { NeutralisationFx } from './Neutralisation';
 import './replay.css';
 
 function useMedia(q: string) {
@@ -421,6 +422,7 @@ function ReplayView({ data }: { data: SessionData }) {
       <AnimatePresence>{settingsOpen && <SettingsPopover data={data} onClose={() => setSettingsOpen(false)} />}</AnimatePresence>
       <EventFeed data={data} overtakes={view.overtakes} />
       <StatusBanner data={data} />
+      <NeutralisationFx data={data} />
       <Chequered data={data} />
       <AnimatePresence>{showLights && <StartLights onDone={lightsDone} />}</AnimatePresence>
 

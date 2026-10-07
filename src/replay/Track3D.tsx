@@ -377,6 +377,17 @@ export default function Track3D({
       cars.set(d.num, { g, tag });
     }
     const sc = makeCar('#ff9f0a');
+    // roof light bar
+    const lampMat = [0, 1].map(() => new THREE.MeshBasicMaterial({ color: 0xffb800 }));
+    const lamps = lampMat.map((m, k) => {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.22, 0.45), m);
+      b.position.set(-0.3, 1.15, k ? 0.3 : -0.3);
+      sc.add(b);
+      return b;
+    });
+    const scGlow = new THREE.PointLight(0xffb800, 0, 30, 1.6);
+    scGlow.position.set(-0.3, 1.6, 0);
+    sc.add(scGlow);
     const scTag = label('SAFETY CAR', 't3d-tag t3d-sc');
     scTag.position.set(0, 2.6, 0);
     sc.add(scTag);
@@ -545,6 +556,10 @@ export default function Track3D({
         }
         sc.position.copy(toV(scState.x, scState.y, vertY(best) + 0.02));
         sc.rotation.y = scState.angle;
+        const ph = Math.floor(now / 250) % 2;
+        const lit = scState.phase !== 'returning';
+        lamps.forEach((l, k) => (lampMat[k].color.setHex(lit && k === ph ? 0xffd60a : 0x3a2a00), l.scale.setScalar(lit && k === ph ? 1.15 : 1)));
+        scGlow.intensity = lit ? 6 : 0;
         sc.scale.setScalar(carScale);
       }
 

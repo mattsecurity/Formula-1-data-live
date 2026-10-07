@@ -674,6 +674,20 @@ export function TrackCanvas({ data, insets }: { data: SessionData; insets: Inset
           ctx.arc(X, Y, r * 1.15, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
+          // roof light bar: two amber lamps flashing alternately (off once called in)
+          if (sc.phase !== 'returning') {
+            const ph = Math.floor(nowMs / 250) % 2;
+            for (let k = 0; k < 2; k++) {
+              const on = k === ph;
+              ctx.fillStyle = on ? '#ffd60a' : 'rgba(80,60,0,0.9)';
+              ctx.shadowColor = '#ffb800';
+              ctx.shadowBlur = on ? 10 : 0;
+              ctx.beginPath();
+              ctx.arc(X + (k ? 3.2 : -3.2), Y - r * 1.15 - 3.5, 2.3, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+          }
           const label = sc.phase === 'deploying' ? 'SAFETY CAR · USCITA' : sc.phase === 'returning' ? 'SAFETY CAR · RIENTRO' : 'SAFETY CAR';
           ctx.font = `700 9.5px ${FONT}`;
           const tw = ctx.measureText(label).width + 12;
