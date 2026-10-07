@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { leaderNum, safetyCarAt } from '../model/derive';
+import { flagStateAt, marshalRange } from '../model/flags';
 import { rotatedBounds } from '../model/geometry';
 import { carAt, distanceAt } from '../model/interp';
 import type { SessionData } from '../model/types';
@@ -18,6 +19,37 @@ interface View {
   zoom: number;
   panX: number;
   panY: number;
+}
+
+/** Tiny flag on a pole whose cloth waves (canvas). Base of the pole at (x, y). */
+function drawMiniFlag(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, nowMs: number) {
+  const pole = 22;
+  ctx.strokeStyle = 'rgba(235,235,245,0.85)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y - pole);
+  ctx.stroke();
+  const w = 14;
+  const h = 9;
+  const top = y - pole + 1;
+  const ph = nowMs / 160;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, top);
+  for (let k = 0; k <= 8; k++) {
+    const xx = (k / 8) * w;
+    ctx.lineTo(x + xx, top + Math.sin(ph - k * 0.7) * 1.6 * (k / 8));
+  }
+  for (let k = 8; k >= 0; k--) {
+    const xx = (k / 8) * w;
+    ctx.lineTo(x + xx, top + h + Math.sin(ph - k * 0.7) * 1.6 * (k / 8));
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
 }
 
 function hexToRgba(hex: string, a: number) {
@@ -243,6 +275,51 @@ export function TrackCanvas({ data, insets }: { data: SessionData; insets: Inset
           ctx.textBaseline = 'middle';
           ctx.fillText(txt, lx + ox, ly + oy + 0.5);
         });
+      }
+
+      // ---- flags: sector yellows and track-wide red
+      {
+        const fs = flagStateAt(data, t);
+        const pulse = 0.55 + 0.45 * Math.sin(nowMs / 260);
+        if (fs.flag === 'red') {
+          ctx.strokeStyle = `rgba(255,59,48,${0.28 + 0.3 * pulse})`;
+          ctx.lineWidth = bandW + 6;
+          ctx.stroke(center);
+        }
+        for (const f of fs.sectors) {
+          const range = marshalRange(data, f.sector);
+          if (!range) continue;
+          const i0 = Math.floor(range[0] * n);
+          const i1 = Math.ceil(range[1] * n);
+          const p = offsetPath(0, i0, i1);
+          const dbl = f.kind === 'DOUBLE YELLOW';
+          ctx.lineCap = 'butt';
+          ctx.strokeStyle = `rgba(255,214,10,${(dbl ? 0.45 : 0.3) + (dbl ? 0.4 : 0.3) * pulse})`;
+          ctx.lineWidth = bandW + (dbl ? 8 : 5);
+          ctx.stroke(p);
+          if (dbl) {
+            ctx.setLineDash([6, 5]);
+            ctx.lineDashOffset = -(nowMs / 30) % 11;
+            ctx.strokeStyle = 'rgba(20,20,20,0.85)';
+            ctx.lineWidth = 2;
+            ctx.stroke(p);
+            ctx.setLineDash([]);
+          }
+          ctx.lineCap = 'round';
+          // waving flag marker just outside the track at the sector midpoint
+          const mid = Math.round(((i0 + i1) / 2)) % n;
+          const side = geo.kappa[mid] > 0 ? -1 : 1;
+          const e = geo.halfWidth + 26 / scale;
+          const fx = sx(ref.x[mid] + geo.nx[mid] * side * e, ref.y[mid] + geo.ny[mid] * side * e);
+          const fy = sy(ref.x[mid] + geo.nx[mid] * side * e, ref.y[mid] + geo.ny[mid] * side * e);
+          drawMiniFlag(ctx, fx - 8, fy + 8, '#ffd60a', nowMs);
+          if (dbl) drawMiniFlag(ctx, fx + 6, fy + 8, '#ffd60a', nowMs + 300);
+          ctx.font = `700 9px ${FONT}`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffd60a';
+          ctx.fillText(`S${f.sector}`, fx + (dbl ? 22 : 8), fy - 6);
+        }
       }
 
       // ---- direction chevrons

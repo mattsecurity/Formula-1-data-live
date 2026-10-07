@@ -75,6 +75,9 @@ export function buildReference(
     speed: null,
     pitLane: null,
     grid: [],
+    z: null,
+    marshal: [],
+    marshalEstimated: true,
   };
 }
 

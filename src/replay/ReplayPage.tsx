@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   STATUS_COLOR,
   STATUS_LABEL,
@@ -19,7 +19,9 @@ import { InsightsSheet } from './Insights';
 import { Leaderboard } from './Leaderboard';
 import { SPEEDS, usePlayback, usePlaybackClock, useThrottledTime } from './store';
 import { TelemetryPanel } from './TelemetryPanel';
+import { flagStateAt } from '../model/flags';
 import { TrackCanvas } from './TrackCanvas';
+const Track3D = lazy(() => import('./Track3D'));
 import { SPEED_LEGEND } from './trackArt';
 import { useSession } from './useSession';
 import { useStandings } from './useStandings';
@@ -40,6 +42,8 @@ function useMedia(q: string) {
 function TopHud({ data, onSettings, settingsOpen }: { data: SessionData; onSettings: () => void; settingsOpen: boolean }) {
   const t = useThrottledTime(250);
   const status = trackStatus(data, t);
+  const fs = flagStateAt(data, t);
+  const yellow = status === 'green' && (fs.flag === 'yellow' || fs.flag === 'double-yellow');
   const w = weatherAt(data, t);
   const isRace = data.meta.kind === 'race';
   const lap = isRace ? raceLapAt(data, t) : 0;
@@ -80,9 +84,11 @@ function TopHud({ data, onSettings, settingsOpen }: { data: SessionData; onSetti
           </div>
         )}
         <span className="hud-sep" />
-        <div className="hud-status" style={{ ['--st' as string]: STATUS_COLOR[status] }}>
-          <i className={status === 'sc' || status === 'vsc' || status === 'red' ? 'pulse' : ''} />
-          {STATUS_LABEL[status]}
+        <div className="hud-status" style={{ ['--st' as string]: yellow ? '#ffd60a' : STATUS_COLOR[status] }}>
+          <i className={status === 'sc' || status === 'vsc' || status === 'red' || yellow ? 'pulse' : ''} />
+          {yellow
+            ? `${fs.flag === 'double-yellow' ? 'Doppia gialla' : 'Gialla'} · S${[...new Set(fs.sectors.map((x) => x.sector))].join(', S')}`
+            : STATUS_LABEL[status]}
         </div>
         <span className="hud-sep hide-sm" />
         <div className="hud-clock hide-sm tabular dim">{localTimeOfDay(data, t)} ora locale</div>
@@ -102,6 +108,7 @@ function TopHud({ data, onSettings, settingsOpen }: { data: SessionData; onSetti
             </span>
           </div>
         )}
+        <ViewToggle />
         <button
           className="icon-btn glass hud-circle"
           onClick={onSettings}
@@ -112,6 +119,21 @@ function TopHud({ data, onSettings, settingsOpen }: { data: SessionData; onSetti
         </button>
       </div>
     </motion.header>
+  );
+}
+
+function ViewToggle() {
+  const view3d = usePlayback((s) => s.view3d);
+  const set = usePlayback((s) => s.set);
+  return (
+    <div className="view-toggle glass" role="group" aria-label="Vista del circuito">
+      <button aria-pressed={!view3d} onClick={() => set({ view3d: false })}>
+        2D
+      </button>
+      <button aria-pressed={view3d} onClick={() => set({ view3d: true })} title="Vista 3D (tasto P)">
+        3D
+      </button>
+    </div>
   );
 }
 
@@ -200,7 +222,7 @@ function SettingsPopover({ data, onClose }: { data: SessionData; onClose: () => 
         </div>
       </div>
       <div className="settings-keys dim">
-        <b>Scorciatoie</b> Spazio play/pausa · ←/→ ±10s · ↑/↓ velocità · 1–9 velocità diretta · R ricomincia · V mappa velocità · I analisi · F segui
+        <b>Scorciatoie</b> Spazio play/pausa · ←/→ ±10s · ↑/↓ velocità · 1–9 velocità diretta · R ricomincia · V mappa velocità · P vista 3D · I analisi · F segui
         pilota · Esc deseleziona · Click su un'auto o in classifica per selezionarla, Shift+click per confrontarne fino a 3.
       </div>
     </motion.div>
@@ -295,6 +317,10 @@ function useKeyboard(data: SessionData) {
         case 'T':
           s.set({ showTrails: !s.showTrails });
           break;
+        case 'p':
+        case 'P':
+          s.set({ view3d: !s.view3d });
+          break;
         case 'v':
         case 'V':
           s.set({ showSpeedMap: !s.showSpeedMap });
@@ -351,12 +377,16 @@ function ReplayView({ data }: { data: SessionData }) {
   useKeyboard(data);
   const view = useStandings(data);
   const selected = usePlayback((s) => s.selected);
+  const view3d = usePlayback((s) => s.view3d);
+  const camMode = usePlayback((s) => s.camMode);
   const wide = useMedia('(min-width: 980px)');
   const [lbOpen, setLbOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const showLb = wide || lbOpen;
   // F1-style start sequence before lights out
-  const [showLights, setShowLights] = useState(() => data.meta.kind === 'race' && data.raceStart > data.startT + 1);
+  const [showLights, setShowLights] = useState(
+    () => data.meta.kind === 'race' && data.raceStart > data.startT + 1 && usePlayback.getState().t <= data.startT + 1,
+  );
   useEffect(() => {
     if (!showLights) return;
     usePlayback.setState({ t: data.raceStart - 1, playing: false });
@@ -369,8 +399,8 @@ function ReplayView({ data }: { data: SessionData }) {
 
   const insets = useMemo(
     () => ({
-      top: 84,
-      bottom: wide ? 104 : 150,
+      top: wide ? 84 : 140,
+      bottom: wide ? 104 : 236,
       left: wide && showLb ? 372 : 16,
       right: wide && selected.length ? 352 : 16,
     }),
@@ -380,7 +410,13 @@ function ReplayView({ data }: { data: SessionData }) {
   return (
     <div className="replay">
       <div className="replay-bg" />
-      <TrackCanvas data={data} insets={insets} />
+      {view3d ? (
+        <Suspense fallback={<div className="t3d-loading">Caricamento vista 3D…</div>}>
+          <Track3D data={data} mode={camMode} insets={insets} onMode={(m) => usePlayback.setState({ camMode: m })} />
+        </Suspense>
+      ) : (
+        <TrackCanvas data={data} insets={insets} />
+      )}
       <TopHud data={data} onSettings={() => setSettingsOpen((o) => !o)} settingsOpen={settingsOpen} />
       <AnimatePresence>{settingsOpen && <SettingsPopover data={data} onClose={() => setSettingsOpen(false)} />}</AnimatePresence>
       <EventFeed data={data} overtakes={view.overtakes} />
@@ -423,6 +459,7 @@ function ReplayView({ data }: { data: SessionData }) {
 
 export default function ReplayPage() {
   const { key } = useParams();
+  const [search] = useSearchParams();
   const sessionKey = Number(key);
   const { data, error, label, progress, retry } = useSession(sessionKey);
   const reset = usePlayback((s) => s.reset);
@@ -431,7 +468,11 @@ export default function ReplayPage() {
   useEffect(() => {
     if (!data) return;
     reset(data.startT, data.endT);
-    usePlayback.setState({ playing: !(data.meta.kind === 'race' && data.raceStart > data.startT + 1) });
+    // ?t=<seconds from the start of the replay> opens a precise moment
+    const at = Number(search.get('t'));
+    if (Number.isFinite(at) && at > 0) usePlayback.setState({ t: Math.min(data.endT, data.startT + at), playing: true });
+    else usePlayback.setState({ playing: !(data.meta.kind === 'race' && data.raceStart > data.startT + 1) });
+    if (search.get('view') === '3d') usePlayback.setState({ view3d: true });
     setReady(data);
     document.title = `${data.meta.meetingName} · ${data.meta.name} — Pitwall`;
     return () => usePlayback.setState({ playing: false });

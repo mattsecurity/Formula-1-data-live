@@ -421,3 +421,31 @@
   height: 4px;
   border-radius: 2px;
 }
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  height: 46px;
+  align-items: center;
+  border-radius: 999px;
+}
+.view-toggle button {
+  height: 38px;
+  min-width: 42px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.view-toggle button[aria-pressed='true'] {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text);
+}
+.t3d-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+}

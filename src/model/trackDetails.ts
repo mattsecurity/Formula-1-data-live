@@ -151,3 +151,60 @@ export function gridSlots(
   }
   return out;
 }
+
+/** Elevation of every reference vertex, averaged from the reference lap's positions. */
+export function elevationProfile(ref: ReferencePath, track: DriverTrack, a: number, b: number): Float32Array | null {
+  if (!track.z) return null;
+  const n = ref.x.length;
+  const sum = new Float64Array(n);
+  const cnt = new Uint16Array(n);
+  const i0 = Math.max(0, bisect(track.t, a));
+  const i1 = Math.min(track.t.length - 1, bisect(track.t, b) + 1);
+  let hint = -1;
+  for (let i = i0; i <= i1; i++) {
+    const p = projectS(ref, track.x[i], track.y[i], hint);
+    hint = p.idx;
+    const k = Math.min(n - 1, Math.floor((p.s / ref.length) * n));
+    sum[k] += track.z[i];
+    cnt[k]++;
+  }
+  const known: number[] = [];
+  for (let k = 0; k < n; k++) if (cnt[k]) known.push(k);
+  if (known.length < n / 30) return null;
+  const z = new Float32Array(n);
+  for (let j = 0; j < known.length; j++) {
+    const ka = known[j];
+    const kb = known[(j + 1) % known.length];
+    const va = sum[ka] / cnt[ka];
+    const vb = sum[kb] / cnt[kb];
+    const span = (kb - ka + n) % n || n;
+    for (let d = 0; d < span; d++) z[(ka + d) % n] = va + ((vb - va) * d) / span;
+  }
+  const sm = new Float32Array(n);
+  for (let k = 0; k < n; k++) {
+    let acc = 0;
+    for (let d = -6; d <= 6; d++) acc += z[(k + d + n) % n];
+    sm[k] = acc / 13;
+  }
+  return sm;
+}
+
+/**
+ * Marshal sectors (the units yellow flags are shown in). Official start
+ * positions when the circuit map provides them, otherwise an even split.
+ */
+export function marshalSectors(
+  ref: ReferencePath,
+  official: { number: number; trackPosition: { x: number; y: number } }[] | undefined,
+  maxSeen: number,
+): { list: ReferencePath['marshal']; estimated: boolean } {
+  if (official && official.length >= 4) {
+    const list = official
+      .filter((m) => m.trackPosition && Number.isFinite(m.trackPosition.x))
+      .map((m) => ({ num: m.number, from: projectS(ref, m.trackPosition.x, m.trackPosition.y).s / ref.length }))
+      .sort((a, b) => a.num - b.num);
+    return { list, estimated: false };
+  }
+  const n = Math.max(maxSeen, 20);
+  return { list: Array.from({ length: n }, (_, i) => ({ num: i + 1, from: i / n })), estimated: true };
+}

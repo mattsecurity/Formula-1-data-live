@@ -9,47 +9,126 @@ import './events.css';
 
 // ---------------------------------------------------------------- start lights
 
+const LIGHT_STEP = 0.85; // seconds between columns, close to the real 1 s
+const LIGHT_FIRST = 1.0;
+
+/** One pod of the gantry: two dark upper lamps and the two red ones used for the start. */
+function LightPod({ i, on, out }: { i: number; on: boolean; out: boolean }) {
+  return (
+    <motion.div
+      className={`sl-pod ${on ? 'on' : ''}`}
+      initial={{ y: -30, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.25 + i * 0.06, type: 'spring', stiffness: 260, damping: 20 }}
+    >
+      {[0, 1, 2, 3].map((r) => {
+        const red = r >= 2;
+        return (
+          <span key={r} className={`sl-lamp ${red ? 'red' : ''} ${red && on ? 'on' : ''}`}>
+            <i className="sl-led" />
+            <AnimatePresence>
+              {red && on && (
+                <motion.i
+                  key="ring"
+                  className="sl-ring"
+                  initial={{ scale: 0.6, opacity: 0.9 }}
+                  animate={{ scale: 2.4, opacity: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                />
+              )}
+            </AnimatePresence>
+          </span>
+        );
+      })}
+      <span className={`sl-num ${on ? 'on' : ''} ${out ? 'out' : ''}`}>{i + 1}</span>
+    </motion.div>
+  );
+}
+
 export function StartLights({ onDone }: { onDone: () => void }) {
   const [lit, setLit] = useState(0);
   const [out, setOut] = useState(false);
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
-    for (let i = 1; i <= 5; i++) timers.push(setTimeout(() => setLit(i), 450 + i * 750));
-    const hold = 450 + 5 * 750 + 500 + Math.random() * 900;
+    for (let i = 1; i <= 5; i++) timers.push(setTimeout(() => setLit(i), (LIGHT_FIRST + (i - 1) * LIGHT_STEP) * 1000));
+    // like the real start, the hold after the fifth light is random
+    const hold = (LIGHT_FIRST + 4 * LIGHT_STEP + 0.7 + Math.random() * 1.6) * 1000;
     timers.push(setTimeout(() => setOut(true), hold));
-    timers.push(setTimeout(onDone, hold + 1500));
+    timers.push(setTimeout(onDone, hold + 1700));
     return () => timers.forEach(clearTimeout);
   }, [onDone]);
+  const glow = out ? 0 : lit / 5;
   return (
-    <motion.div className="lights-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.6 } }}>
+    <motion.div
+      className="lights-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.04, filter: 'blur(10px)', transition: { duration: 0.7, ease: [0.4, 0, 0.2, 1] } }}
+    >
+      {/* red spill on the scene, growing with every light */}
+      <motion.div className="sl-spill" animate={{ opacity: glow }} transition={{ duration: out ? 0.08 : 0.35 }} />
       <motion.div
-        className="lights glass glass-strong"
-        initial={{ y: -40, scale: 0.9, opacity: 0 }}
-        animate={{ y: 0, scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+        className="sl-kicker"
+        initial={{ opacity: 0, y: 8, letterSpacing: '0.5em' }}
+        animate={{ opacity: out ? 0 : 1, y: 0, letterSpacing: '0.32em' }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+      >
+        Partenza
+      </motion.div>
+      <motion.div
+        className="sl-gantry"
+        initial={{ y: -120, opacity: 0, rotateX: 25 }}
+        animate={out ? { y: -16, opacity: 1, rotateX: 0 } : { y: 0, opacity: 1, rotateX: 0 }}
+        transition={{ type: 'spring', stiffness: 140, damping: 16 }}
         role="img"
         aria-label={out ? 'Luci spente, via!' : `${lit} luci accese`}
       >
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className="light-col">
-            {[0, 1].map((r) => (
-              <span key={r} className={`light ${!out && lit > i ? 'on' : ''}`} />
-            ))}
-          </div>
-        ))}
+        <div className="sl-beam" />
+        <div className="sl-pods">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <LightPod key={i} i={i} on={!out && lit > i} out={out} />
+          ))}
+        </div>
+        <motion.div className="sl-floor" animate={{ opacity: glow }} transition={{ duration: out ? 0.08 : 0.35 }} />
       </motion.div>
-      <AnimatePresence>
-        {out && (
-          <motion.div
-            className="lights-go"
-            initial={{ scale: 0.6, opacity: 0, filter: 'blur(12px)' }}
-            animate={{ scale: 1, opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-          >
-            Luci spente
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="sl-go-wrap">
+        <AnimatePresence>
+          {out && (
+            <>
+              <motion.div
+                key="flash"
+                className="sl-flash"
+                initial={{ opacity: 0.55, scale: 0.4 }}
+                animate={{ opacity: 0, scale: 2.2 }}
+                transition={{ duration: 0.9, ease: 'easeOut' }}
+              />
+              <motion.div key="go" className="lights-go" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.035 } } }}>
+                {'Luci spente'.split('').map((ch, k) => (
+                  <motion.span
+                    key={k}
+                    variants={{
+                      hidden: { opacity: 0, x: -24, filter: 'blur(8px)' },
+                      show: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { type: 'spring', stiffness: 380, damping: 26 } },
+                    }}
+                  >
+                    {ch === ' ' ? '\u00a0' : ch}
+                  </motion.span>
+                ))}
+              </motion.div>
+              <motion.div
+                key="sub"
+                className="sl-go-sub"
+                initial={{ opacity: 0, scaleX: 0 }}
+                animate={{ opacity: 1, scaleX: 1 }}
+                transition={{ delay: 0.25, duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+              >
+                Via!
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
       <button className="btn btn-secondary btn-sm lights-skip" onClick={onDone}>
         Salta
       </button>

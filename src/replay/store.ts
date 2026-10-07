@@ -17,6 +17,8 @@ export interface PlaybackState {
   showTrails: boolean;
   showCorners: boolean;
   showSpeedMap: boolean;
+  view3d: boolean;
+  camMode: 'orbit' | 'chase' | 'top';
   orderMode: OrderMode;
   gapMode: 'leader' | 'interval' | 'last' | 'best';
   rotation: number;
@@ -49,6 +51,8 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
   showTrails: prefs.showTrails ?? true,
   showCorners: prefs.showCorners ?? true,
   showSpeedMap: false,
+  view3d: false,
+  camMode: 'orbit',
   orderMode: prefs.orderMode ?? 'live',
   gapMode: prefs.gapMode ?? 'interval',
   rotation: 0,

@@ -22,7 +22,7 @@ import type {
 } from '../api/types';
 import { cornerName, findCircuit } from '../data/circuits';
 import { normCompound, teamColor } from './constants';
-import { analyseReferenceLap, gridSlots, tracePitLane } from './trackDetails';
+import { analyseReferenceLap, elevationProfile, gridSlots, marshalSectors, tracePitLane } from './trackDetails';
 import { buildReference, projectS } from './geometry';
 import { bisect, carAt, distanceAt, runningMax, timeAtDistance } from './interp';
 import type {
@@ -79,6 +79,7 @@ interface CompactTrack {
   t: Float64Array;
   x: Float32Array;
   y: Float32Array;
+  z?: Float32Array;
 }
 
 async function fetchWindowed<T>(
@@ -111,7 +112,7 @@ async function loadLocation(
   cacheable: boolean,
   signal?: AbortSignal,
 ): Promise<CompactTrack> {
-  const key = `loc:v2:${src.id}:${sessionKey}:${driver}:${from}:${to}`;
+  const key = `loc:v3:${src.id}:${sessionKey}:${driver}:${from}:${to}`;
   if (cacheable) {
     const hit = await cacheGet<CompactTrack>(key);
     if (hit) return hit;
@@ -127,25 +128,30 @@ async function loadLocation(
     to,
     signal,
   );
-  const pts: [number, number, number][] = [];
+  const pts: [number, number, number, number][] = [];
   for (const r of rows) {
     if (!isNum(r.x) || !isNum(r.y) || (r.x === 0 && r.y === 0)) continue;
     const t = (parseDate(r.date) - t0) / 1000;
-    if (Number.isFinite(t)) pts.push([t, r.x, r.y]);
+    if (Number.isFinite(t)) pts.push([t, r.x, r.y, isNum(r.z) ? r.z : NaN]);
   }
   pts.sort((a, b) => a[0] - b[0]);
   const t = new Float64Array(pts.length);
   const x = new Float32Array(pts.length);
   const y = new Float32Array(pts.length);
+  const z = new Float32Array(pts.length);
   let n = 0;
+  let hasZ = false;
   for (const p of pts) {
     if (n && p[0] - t[n - 1] < 0.01) continue;
     t[n] = p[0];
     x[n] = p[1];
     y[n] = p[2];
+    z[n] = Number.isFinite(p[3]) ? p[3] : 0;
+    if (Number.isFinite(p[3]) && p[3] !== 0) hasZ = true;
     n++;
   }
-  const out = { t: t.slice(0, n), x: x.slice(0, n), y: y.slice(0, n) };
+  const out: CompactTrack = { t: t.slice(0, n), x: x.slice(0, n), y: y.slice(0, n) };
+  if (hasZ) out.z = z.slice(0, n);
   if (cacheable && n) void cacheSet(key, out);
   return out;
 }
@@ -547,6 +553,7 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
         )
         .catch(() => [] as RawCarData[]);
       integratedM = analyseReferenceLap(ref, chosen.lap, refTrack, cd, t0).lengthM;
+      ref.z = elevationProfile(ref, refTrack, chosen.lap.start!, chosen.lap.start! + chosen.lap.dur!);
     }
   }
   ref.lengthM = circuit?.length ?? integratedM ?? ref.length / 10;
@@ -656,6 +663,12 @@ export async function loadSession(src: DataSource, sessionKey: number, opts: Loa
     : [];
 
   ref.pitLane = tracePitLane(ref, tracks, pits);
+  {
+    const maxSeen = raceControl.reduce((m, r) => (r.sector != null && r.sector > m ? r.sector : m), 0);
+    const ms = marshalSectors(ref, info?.marshalSectors, maxSeen);
+    ref.marshal = ms.list;
+    ref.marshalEstimated = ms.estimated;
+  }
   if (isRace) ref.grid = gridSlots(ref, tracks, grid, raceStart);
 
   progress('Pronto', 1);

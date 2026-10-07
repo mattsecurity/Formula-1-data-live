@@ -1,0 +1,24 @@
+.wf {
+  overflow: visible;
+  display: block;
+}
+.wf-slice {
+  animation: wfWave 1.15s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
+}
+@keyframes wfWave {
+  0%,
+  100% {
+    transform: translateY(calc(var(--amp) * -1));
+    filter: brightness(1.12);
+  }
+  50% {
+    transform: translateY(var(--amp));
+    filter: brightness(0.72);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-slice {
+    animation: none;
+  }
+}
