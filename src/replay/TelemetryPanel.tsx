@@ -8,6 +8,7 @@ import { fmtLapTime, stintAt, type StandingRow } from '../model/standings';
 import type { DriverTrack, Lap, SessionData } from '../model/types';
 import { Headshot } from '../ui/Headshot';
 import { Icon } from '../ui/Icon';
+import { CarPosterModal } from '../ui/CarPoster';
 import { TopCar } from '../ui/TopCar';
 import { usePlayback, useThrottledTime } from './store';
 import './telemetry.css';
@@ -164,6 +165,7 @@ function DriverCard({ data, num, row }: { data: SessionData; num: number; row?: 
   const stint = stintAt(data.stints, num, Math.max(1, row?.lap ?? 1));
   const drsState = !s ? '—' : s.drs >= 10 ? 'OPEN' : s.drs === 8 ? 'ELIG' : 'OFF';
   const rpmF = s ? Math.max(0, Math.min(1, (s.rpm - 4000) / 9000)) : 0;
+  const [poster, setPoster] = useState(false);
 
   return (
     <motion.article
@@ -191,7 +193,11 @@ function DriverCard({ data, num, row }: { data: SessionData; num: number; row?: 
         </button>
       </header>
 
-      <TopCar color={d.color} compound={row?.compound !== 'UNKNOWN' ? row?.compound : undefined} className="tm-car" title={`Monoposto ${d.team}`} />
+      <button className="tm-car-btn" onClick={() => setPoster(true)} aria-label={`Scheda della monoposto di ${d.full}`} title="Scheda monoposto">
+        <TopCar color={d.color} compound={row?.compound !== 'UNKNOWN' ? row?.compound : undefined} number={d.num} className="tm-car" title={`Monoposto ${d.team}`} />
+        <span className="tm-car-hint">Scheda monoposto</span>
+      </button>
+      <AnimatePresence>{poster && <CarPosterModal d={d} year={data.meta.year} onClose={() => setPoster(false)} />}</AnimatePresence>
 
       <div className="tm-read">
         <div className="tm-cell tm-speed">

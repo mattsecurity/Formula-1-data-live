@@ -24,6 +24,7 @@ Una web app in stile Apple Pro (Liquid Glass, grafica da broadcast, tema scuro) 
 
 ### Animazioni
 - Semaforo di partenza come in TV: portale con 5 pod e lenti a LED, luci che si accendono una alla volta con un lampo e un riflesso rosso sulla scena, attesa casuale e "Luci spente" con dissolvenza verso la gara.
+- **Safety Car e Virtual Safety Car**: quando entrano in pista parte una grafica a tutto schermo con strisce di pericolo animate e lampi ambra. Per la SC arriva la vettura di sicurezza con la barra luci che lampeggia, per la VSC compare il pannello LED dei commissari con il delta che si stabilizza. Finché sono in pista i bordi dello schermo pulsano in ambra; poi compaiono "Safety Car in this lap" o "VSC ending" e, alla ripartenza, un lampo verde. Sulla mappa 2D e 3D la Safety Car ha le luci lampeggianti.
 - Sottopancia in stile TV per bandiera a scacchi (con il vincitore), Safety Car, VSC, bandiera rossa e pista libera.
 - Notifiche per sorpassi, giro più veloce, pit stop e ritiri. Un segnale sulla mappa evidenzia ogni sorpasso.
 - Tracciati reali che si disegnano con le monoposto in movimento, transizioni tra le pagine e riflessi del vetro che seguono il cursore.
@@ -38,7 +39,7 @@ L'equivalente delle qualifiche dell'originale: confronta i giri di più piloti c
 ### Altre pagine
 - **Calendario** delle stagioni dal 2023 a oggi, con il tracciato reale di ogni circuito.
 - **Weekend**: mappa e dati del circuito (lunghezza, primo GP, altitudine), tutte le sessioni e la classifica.
-- **Piloti e Team**: ritratti ufficiali e monoposto vista dall'alto nei colori del team.
+- **Piloti e Team**: ritratti ufficiali e, aprendo un pilota, la **scheda della sua monoposto** in stile poster di presentazione: vista dall'alto e di lato nei colori del team, con numero e nome. Si apre anche dal replay cliccando l'auto nel pannello telemetria. Le auto sono illustrazioni vettoriali, senza loghi di sponsor o della F1.
 - **Classifiche** piloti e costruttori.
 - **Demo offline**: un Gran Premio d'Italia simulato sul vero tracciato di Monza (sorpassi, Safety Car, pit stop, ritiro) e una qualifica, utili per provare tutto anche senza connessione. Se sei online, la demo usa le foto ufficiali dei piloti.
 

@@ -19,6 +19,8 @@ export function TopCar({
   style,
   title,
   detail = true,
+  number,
+  accent,
 }: {
   color: string;
   compound?: Compound;
@@ -26,6 +28,10 @@ export function TopCar({
   style?: React.CSSProperties;
   title?: string;
   detail?: boolean;
+  /** Race number painted on the engine cover and nose. */
+  number?: number;
+  /** Second livery colour for the centre stripe. */
+  accent?: string;
 }) {
   const id = useId().replace(/:/g, '');
   const tyre = compound ? COMPOUND_COLORS[compound] : '#3a3a40';
@@ -94,7 +100,17 @@ export function TopCar({
       <path d="M70 21 C60 23 46 29 30 32 M70 63 C60 61 46 55 30 52" stroke="rgba(0,0,0,0.35)" strokeWidth="2" fill="none" />
 
       {/* livery centre line */}
-      {detail && <path d="M30 42 L196 42" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" />}
+      {detail && <path d="M30 42 L196 42" stroke={accent ?? 'rgba(255,255,255,0.55)'} strokeWidth={accent ? 2.4 : 1.2} />}
+      {number != null && (
+        <g fontFamily="-apple-system, 'Inter Variable', sans-serif" fontWeight="850" fontStyle="italic" fill="#fff" stroke="rgba(0,0,0,0.35)" strokeWidth="0.4">
+          <text x="84" y="47" fontSize="14" textAnchor="middle">
+            {number}
+          </text>
+          <text x="168" y="44.6" fontSize="6.5" textAnchor="middle">
+            {number}
+          </text>
+        </g>
+      )}
 
       {/* airbox, cockpit, driver, halo */}
       <ellipse cx="110" cy="42" rx="7" ry="4.2" fill="#060607" />

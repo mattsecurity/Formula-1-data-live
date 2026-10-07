@@ -247,3 +247,29 @@
   font-size: 11px;
   color: var(--orange);
 }
+.tm-car-btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.tm-car-hint {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.tm-car-btn:hover .tm-car-hint,
+.tm-car-btn:focus-visible .tm-car-hint {
+  opacity: 1;
+}

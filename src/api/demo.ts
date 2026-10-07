@@ -291,6 +291,10 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
   let scDeployed: number | null = null;
   let scInLap: number | null = null;
   let scEnd: number | null = null;
+  // a short Virtual Safety Car later on (debris)
+  const vscStartLap = 14.2;
+  let vscDeployed: number | null = null;
+  let vscEnding: number | null = null;
   let chequered: number | null = null;
   const rc = (t: number, category: string, message: string, extra: Row = {}) =>
     out.race_control.push({ ...base, date: isoAt(T0 + t * 1000), category, message, flag: null, scope: null, sector: null, driver_number: null, lap_number: null, ...extra });
@@ -328,6 +332,17 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
       rc(t, 'SafetyCar', 'SAFETY CAR IN THIS LAP', { lap_number: Math.ceil(lead) });
     }
     const scActive = scDeployed != null && (scEnd == null || t < scEnd) && t >= scDeployed;
+    if (vscDeployed == null && lead > vscStartLap) {
+      vscDeployed = t;
+      rc(t, 'SafetyCar', 'VIRTUAL SAFETY CAR DEPLOYED', { lap_number: Math.ceil(lead) });
+      rc(t + 1, 'Other', 'DEBRIS ON TRACK - TURN 4');
+    }
+    if (vscDeployed != null && vscEnding == null && t > vscDeployed + 42) {
+      vscEnding = t;
+      rc(t, 'SafetyCar', 'VIRTUAL SAFETY CAR ENDING', { lap_number: Math.ceil(lead) });
+      rc(t + 10, 'Flag', 'GREEN FLAG', { flag: 'GREEN', scope: 'Track' });
+    }
+    const vscActive = vscDeployed != null && t >= vscDeployed && (vscEnding == null || t < vscEnding + 10);
     const sorted = [...cars].sort((a, b) => b.s - a.s);
     for (let i = 0; i < sorted.length; i++) {
       const car = sorted[i];
@@ -343,6 +358,7 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
       const age = car.lap - car.stintStartLap + 1;
       let vt = sm.v / (car.pace * tyreDeg(comp, Math.max(0, age)));
       if (car.finished) vt *= 0.45;
+      if (vscActive && !car.finished && !car.inPit) vt *= 0.62;
       if (scActive && !car.finished) {
         vt = Math.min(vt, 42);
         if (ahead && !ahead.retired) {
@@ -350,7 +366,7 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
           if (gap < 30) vt = Math.min(vt, ahead.v * 0.97);
           else if (gap > 70) vt = Math.min(sm.v, vt * 1.35);
         }
-      } else if (ahead && !ahead.retired && !ahead.inPit && !car.inPit && !ahead.finished) {
+      } else if (!vscActive && ahead && !ahead.retired && !ahead.inPit && !car.inPit && !ahead.finished) {
         const gap = ahead.s - car.s;
         const aheadPace = ahead.pace * tyreDeg(ahead.compounds[ahead.stint], ahead.lap - ahead.stintStartLap + 1);
         const myPace = car.pace * tyreDeg(comp, Math.max(0, age));
@@ -474,7 +490,7 @@ function simulateRace(c: Circuit): Record<string, Row[]> {
           rpm: kmh < 3 ? 4000 : Math.round(9500 + ((kmh % 40) / 40) * 2400),
           throttle: car.v < sm.v * 0.93 / car.pace && accel < -0.1 ? 0 : kmh < 3 ? 0 : 100,
           brake: accel < -0.5 ? 100 : 0,
-          drs: inDrs(c, car.s) && car.lap >= 3 && !scActive ? 12 : 8,
+          drs: inDrs(c, car.s) && car.lap >= 3 && !scActive && !vscActive ? 12 : 8,
         });
       }
     }

@@ -8,6 +8,7 @@ import type { Driver } from '../model/types';
 import { Flag } from '../ui/Flag';
 import { Portrait } from '../ui/Portrait';
 import { TopCar } from '../ui/TopCar';
+import { CarPoster } from '../ui/CarPoster';
 import { ErrorCard } from '../ui/ErrorCard';
 import { Headshot } from '../ui/Headshot';
 import { Icon } from '../ui/Icon';
@@ -52,15 +53,7 @@ function DriverCard({ d, champ, onOpen, i }: { d: Driver; champ?: Champ; onOpen:
   );
 }
 
-function DrivingCar({ color, team }: { color: string; team: string }) {
-  return (
-    <motion.div initial={{ x: '-40%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}>
-      <TopCar color={color} className="dsheet-car" title={`Monoposto ${team}`} />
-    </motion.div>
-  );
-}
-
-function DriverSheet({ d, champ, sessionKey, onClose }: { d: Driver; champ?: Champ; sessionKey?: number; onClose: () => void }) {
+function DriverSheet({ d, champ, sessionKey, year, onClose }: { d: Driver; champ?: Champ; sessionKey?: number; year: number; onClose: () => void }) {
   return (
     <motion.div className="sheet-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
@@ -91,7 +84,7 @@ function DriverSheet({ d, champ, sessionKey, onClose }: { d: Driver; champ?: Cha
             </div>
           </div>
         </div>
-        <DrivingCar color={d.color} team={d.team} />
+        <CarPoster d={d} year={year} />
         <div className="dsheet-stats">
           <div>
             <span className="dim">Mondiale</span>
@@ -202,7 +195,7 @@ export default function DriversPage() {
         </div>
       )}
       <AnimatePresence>
-        {open && <DriverSheet d={open} champ={champ.get(open.num)} sessionKey={st.data?.sessionKey} onClose={() => setOpen(null)} />}
+        {open && <DriverSheet d={open} champ={champ.get(open.num)} sessionKey={st.data?.sessionKey} year={y} onClose={() => setOpen(null)} />}
       </AnimatePresence>
     </main>
   );

@@ -217,7 +217,8 @@ export function StatusBanner({ data }: { data: SessionData }) {
     prev.current = t;
     if (!(t > a && t - a < 60)) return;
     for (const p of data.periods) {
-      if (a < p.start && t >= p.start) setBanner({ id: p.start, kind: p.kind });
+      // SC and VSC get their own full-screen graphics (Neutralisation.tsx)
+      if (a < p.start && t >= p.start && p.kind === 'RED') setBanner({ id: p.start, kind: p.kind });
       else if (a < p.end && t >= p.end && p.end < data.endT - 1) setBanner({ id: p.end + 0.5, kind: 'GREEN' });
     }
   }, [t, data]);
