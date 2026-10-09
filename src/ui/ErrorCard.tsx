@@ -9,7 +9,8 @@ export function ErrorCard({ error, onRetry }: { error: Error; onRetry?: () => vo
       <div style={{ flex: 1, minWidth: 220 }}>
         <b>Impossibile contattare OpenF1</b>
         <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
-          {error.message}. Controlla la connessione o riprova tra qualche secondo.
+          {error.message}. Se è in corso una sessione di F1, OpenF1 riserva l’accesso agli abbonati (anche per le gare passate) fino a fine
+          sessione: riprova più tardi. Altrimenti controlla la connessione.
         </p>
       </div>
       {onRetry && (

@@ -95,7 +95,9 @@ async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T[]> {
       res = await schedule(() => fetch(url, { signal, headers: { Accept: 'application/json' } }));
     } catch (e) {
       if ((e as Error).name === 'AbortError') throw e;
-      if (++attempt > 3) throw new HttpError(0, 'Connessione a OpenF1 non riuscita');
+      // A 401 during a live session comes back without CORS headers, so the
+      // browser reports it as a network failure, not as a status code.
+      if (++attempt > 3) throw new HttpError(0, 'OpenF1 non raggiungibile');
       await sleep(600 * 2 ** attempt, signal);
       continue;
     }
@@ -120,6 +122,7 @@ async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T[]> {
     if (res.status === 422 || res.status === 413) {
       throw new HttpError(res.status, 'Richiesta troppo grande');
     }
+    if (res.status === 401) throw new HttpError(401, 'OpenF1 ha limitato l’accesso gratuito');
     throw new HttpError(res.status, `OpenF1 ha risposto ${res.status}`);
   }
 }
@@ -134,7 +137,18 @@ export class OpenF1Source implements DataSource {
       const hit = await cacheGet<T[]>(`q:${url}`, cacheMs);
       if (hit) return hit;
     }
-    const rows = await fetchJson<T>(url, opts.signal);
+    let rows: T[];
+    try {
+      rows = await fetchJson<T>(url, opts.signal);
+    } catch (e) {
+      // While a live session runs OpenF1 locks free access, past data included,
+      // so serve whatever this browser saved earlier even if it has expired.
+      if ((e as Error).name !== 'AbortError' && cacheMs > 0) {
+        const stale = await cacheGet<T[]>(`q:${url}`);
+        if (stale) return stale;
+      }
+      throw e;
+    }
     if (cacheMs > 0 && rows.length) void cacheSet(`q:${url}`, rows);
     return rows;
   }
