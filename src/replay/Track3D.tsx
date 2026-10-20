@@ -7,6 +7,7 @@ import { flagStateAt, marshalRange } from '../model/flags';
 import { carAt, distanceAt } from '../model/interp';
 import type { SessionData } from '../model/types';
 import { usePlayback } from './store';
+import { WHEEL_RADIUS, carFromModel, drapeCircuit, fitCenterline, hasCircuitModel, heightField, loadCarModel, loadCircuitModel } from './circuitModel';
 import { buildTrackGeo } from './trackArt';
 import { liveOrder } from './useStandings';
 import './track3d.css';
@@ -15,16 +16,22 @@ export type CamMode = 'orbit' | 'chase' | 'top';
 
 const EXAG = 1.8; // vertical exaggeration so elevation changes read on screen
 const HALF_W = 7; // half track width, metres
+// track overlays (DRS, flags, start line) stay on top of the circuit model's ground layers
+const OVERLAY = { polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12 };
 
 function makeCar(color: string): THREE.Group {
   const g = new THREE.Group();
+  // simple box car, swapped for the Blender model once it has loaded
+  const body = new THREE.Group();
+  body.name = 'body';
+  g.add(body);
   const paint = new THREE.MeshStandardMaterial({ color, metalness: 0.35, roughness: 0.35 });
   const carbon = new THREE.MeshStandardMaterial({ color: 0x15151a, metalness: 0.2, roughness: 0.6 });
   const tyre = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.9 });
   const add = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number) => {
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, y, z);
-    g.add(m);
+    body.add(m);
     return m;
   };
   // car points along +X; Y up; Z sideways
@@ -51,12 +58,30 @@ function makeCar(color: string): THREE.Group {
   // soft contact shadow
   const sh = new THREE.Mesh(
     new THREE.PlaneGeometry(6.2, 2.6),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false }),
+    new THREE.MeshBasicMaterial({ map: blobTexture(), color: 0x000000, transparent: true, opacity: 0.55, depthWrite: false, ...OVERLAY }),
   );
   sh.rotation.x = -Math.PI / 2;
   sh.position.y = 0.02;
   g.add(sh);
   return g;
+}
+
+let blob: THREE.Texture | null = null;
+/** Soft contact shadow under each car. */
+function blobTexture(): THREE.Texture {
+  if (blob) return blob;
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 32;
+  const x = c.getContext('2d')!;
+  x.scale(1, 0.5);
+  const g = x.createRadialGradient(32, 32, 4, 32, 32, 32);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g;
+  x.fillRect(0, 0, 64, 64);
+  blob = new THREE.CanvasTexture(c);
+  return blob;
 }
 
 function checkerTexture(): THREE.Texture {
@@ -72,6 +97,69 @@ function checkerTexture(): THREE.Texture {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+function skyTexture(): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = 2;
+  c.height = 256;
+  const x = c.getContext('2d')!;
+  const g = x.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#4f86d4');
+  g.addColorStop(0.55, '#a9c6e8');
+  g.addColorStop(1, '#e4ebf2');
+  x.fillStyle = g;
+  x.fillRect(0, 0, 2, 256);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * The cars follow the pit lane traced from telemetry: when it is not where the model has one
+ * (e.g. the simulated demo), lay asphalt under it.
+ */
+function addTracedPitLane(circuit: THREE.Group, pts: THREE.Vector3[]) {
+  if (pts.length < 4) return;
+  const lane = circuit.getObjectByName('D_PitLane') as THREE.Mesh | undefined;
+  const mat = lane?.material as THREE.Material | undefined;
+  if (lane) {
+    const pos = lane.geometry.attributes.position;
+    let far = 0;
+    let k = 0;
+    for (let i = 0; i < pts.length; i += 4, k++) {
+      let bd = Infinity;
+      for (let j = 0; j < pos.count; j++) bd = Math.min(bd, (pos.getX(j) - pts[i].x) ** 2 + (pos.getZ(j) - pts[i].z) ** 2);
+      if (bd > 64) far++;
+    }
+    if (far < k * 0.3) return;
+  }
+  const v: number[] = [];
+  const uv: number[] = [];
+  const idx: number[] = [];
+  let s = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[Math.max(0, i - 1)];
+    const b = pts[Math.min(pts.length - 1, i + 1)];
+    const dx = b.x - a.x;
+    const dz = b.z - a.z;
+    const L = Math.hypot(dx, dz) || 1;
+    const nx = -dz / L;
+    const nz = dx / L;
+    if (i) s += pts[i].distanceTo(pts[i - 1]);
+    v.push(pts[i].x + nx * 5, pts[i].y - 0.04, pts[i].z + nz * 5, pts[i].x - nx * 5, pts[i].y - 0.04, pts[i].z - nz * 5);
+    uv.push(0, s / 12, 1, s / 12);
+    if (i) idx.push(2 * i - 2, 2 * i, 2 * i - 1, 2 * i - 1, 2 * i, 2 * i + 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, mat ?? new THREE.MeshStandardMaterial({ color: 0x5d5d63, roughness: 0.9 }));
+  m.material.side = THREE.DoubleSide;
+  m.receiveShadow = true;
+  circuit.add(m);
 }
 
 function label(text: string, cls: string): CSS2DObject {
@@ -147,21 +235,32 @@ export default function Track3D({
     }
     cx /= n;
     cy /= n;
+    // telemetry altitude is noisy: average it over ~±20 m so the surface (and the cars on it) stay smooth
+    let elev: Float32Array | null = null;
+    if (ref.z) {
+      const w = Math.max(1, Math.round(20 / (ref.lengthM / n)));
+      elev = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let acc = 0;
+        for (let k = -w; k <= w; k++) acc += ref.z[(i + k + n) % n];
+        elev[i] = acc / (2 * w + 1);
+      }
+    }
     let zmin = Infinity;
-    if (ref.z) for (let i = 0; i < n; i++) zmin = Math.min(zmin, ref.z[i]);
+    if (elev) for (let i = 0; i < n; i++) zmin = Math.min(zmin, elev[i]);
     if (!Number.isFinite(zmin)) zmin = 0;
     const elevAt = (frac: number) => {
-      if (!ref.z) return 0;
+      if (!elev) return 0;
       let f = frac % 1;
       if (f < 0) f += 1;
       const k = f * n;
       const i = Math.floor(k) % n;
       const j = (i + 1) % n;
       const u = k - Math.floor(k);
-      return (((ref.z[i] + (ref.z[j] - ref.z[i]) * u) - zmin) / upm) * EXAG;
+      return (((elev[i] + (elev[j] - elev[i]) * u) - zmin) / upm) * EXAG;
     };
     const toV = (x: number, y: number, h = 0) => new THREE.Vector3((x - cx) / upm, h, -(y - cy) / upm);
-    const vertY = (i: number) => (ref.z ? ((ref.z[i] - zmin) / upm) * EXAG : 0);
+    const vertY = (i: number) => (elev ? ((elev[i] - zmin) / upm) * EXAG : 0);
     let extent = 0;
     for (let i = 0; i < n; i++) extent = Math.max(extent, Math.hypot((ref.x[i] - cx) / upm, (ref.y[i] - cy) / upm));
 
@@ -176,10 +275,16 @@ export default function Track3D({
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x07070a, extent * 2.2, extent * 6);
-    scene.add(new THREE.HemisphereLight(0xd8e2ff, 0x18181e, 1.6));
+    const hemi = new THREE.HemisphereLight(0xd8e2ff, 0x18181e, 1.6);
+    scene.add(hemi);
     const sun = new THREE.DirectionalLight(0xffffff, 2.2);
     sun.position.set(extent * 0.4, extent, extent * 0.3);
-    scene.add(sun);
+    scene.add(sun, sun.target);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    let fogColor = 0x07070a;
+    let fogNear = 1.2;
+    let fogFar = 3.2;
 
     const camera = new THREE.PerspectiveCamera(42, 1, 0.5, extent * 20);
     // start from the same orientation as the 2D map
@@ -203,14 +308,18 @@ export default function Track3D({
     controls.maxDistance = extent * 4;
     controls.target.set(0, 0, 0);
 
+    // procedural circuit, hidden when a Blender model of the circuit is available
+    const proc: THREE.Object3D[] = [];
     // ground
     const ground = new THREE.Mesh(new THREE.CircleGeometry(extent * 3, 64), new THREE.MeshStandardMaterial({ color: 0x0b0b0e, roughness: 1 }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1.2;
     scene.add(ground);
+    proc.push(ground);
     const grid = new THREE.GridHelper(extent * 6, Math.round((extent * 6) / 100), 0x1d1d24, 0x141419);
     grid.position.y = -1.15;
     scene.add(grid);
+    proc.push(grid);
 
     // ---------- track ribbon (+ skirts)
     const ribbon = (off0: number, off1: number, from: number, to: number, lift = 0) => {
@@ -236,6 +345,7 @@ export default function Track3D({
     };
     const asphalt = new THREE.Mesh(ribbon(HALF_W, -HALF_W, 0, n), new THREE.MeshStandardMaterial({ color: 0x3b3b45, roughness: 0.88, side: THREE.DoubleSide }));
     scene.add(asphalt);
+    proc.push(asphalt);
     // skirts down to the ground make the elevation readable
     for (const side of [HALF_W, -HALF_W]) {
       const pos: number[] = [];
@@ -254,7 +364,9 @@ export default function Track3D({
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
       g.setIndex(idx);
       g.computeVertexNormals();
-      scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x141418, roughness: 1, side: THREE.DoubleSide })));
+      const skirt = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x141418, roughness: 1, side: THREE.DoubleSide }));
+      scene.add(skirt);
+      proc.push(skirt);
     }
     // white edge lines
     for (const side of [HALF_W - 0.3, -HALF_W + 0.3]) {
@@ -263,7 +375,9 @@ export default function Track3D({
         const j = i % n;
         pts.push(toV(ref.x[j] + geo.nx[j] * side * upm, ref.y[j] + geo.ny[j] * side * upm, vertY(j) + 0.04));
       }
-      scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 })));
+      const edge = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 }));
+      scene.add(edge);
+      proc.push(edge);
     }
     // kerbs: red/white blocks on the inside of tight corners
     {
@@ -290,27 +404,30 @@ export default function Track3D({
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
       g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
       g.computeVertexNormals();
-      scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: THREE.DoubleSide })));
+      const kerbs = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: THREE.DoubleSide }));
+      scene.add(kerbs);
+      proc.push(kerbs);
     }
     // DRS zones
     for (const [f0, f1] of ref.drs) {
       let i1 = Math.floor(f1 * n);
       const i0 = Math.floor(f0 * n);
       if (i1 < i0) i1 += n;
-      scene.add(new THREE.Mesh(ribbon(HALF_W, -HALF_W, i0, i1, 0.03), new THREE.MeshBasicMaterial({ color: 0x30d158, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false })));
+      scene.add(new THREE.Mesh(ribbon(HALF_W, -HALF_W, i0, i1, 0.03), new THREE.MeshBasicMaterial({ color: 0x30d158, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false, ...OVERLAY })));
     }
     // start / finish
     {
       const p = toV(ref.x[0], ref.y[0], vertY(0) + 0.05);
-      const line = new THREE.Mesh(new THREE.PlaneGeometry(HALF_W * 2, 2), new THREE.MeshBasicMaterial({ map: checkerTexture(), side: THREE.DoubleSide }));
+      const line = new THREE.Mesh(new THREE.PlaneGeometry(HALF_W * 2, 2), new THREE.MeshBasicMaterial({ map: checkerTexture(), side: THREE.DoubleSide, ...OVERLAY }));
       line.rotation.x = -Math.PI / 2;
       line.rotation.z = Math.atan2(geo.ny[0], geo.nx[0]);
       line.position.copy(p);
       scene.add(line);
     }
     // pit lane
+    const pitPts: THREE.Vector3[] = [];
     if (ref.pitLane) {
-      const pts: THREE.Vector3[] = [];
+      const pts = pitPts;
       for (let i = 0; i < ref.pitLane.x.length; i++) {
         const v = toV(ref.pitLane.x[i], ref.pitLane.y[i]);
         let best = 0;
@@ -328,6 +445,7 @@ export default function Track3D({
       const pit = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0x0a84ff, dashSize: 3, gapSize: 3 }));
       pit.computeLineDistances();
       scene.add(pit);
+      proc.push(pit);
     }
     // corners
     for (const c of geo.corners) {
@@ -346,7 +464,7 @@ export default function Track3D({
       if (!r) continue;
       const mesh = new THREE.Mesh(
         ribbon(HALF_W + 4, -HALF_W - 4, Math.floor(r[0] * n), Math.ceil(r[1] * n), 0.08),
-        new THREE.MeshBasicMaterial({ color: 0xffd60a, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }),
+        new THREE.MeshBasicMaterial({ color: 0xffd60a, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false, ...OVERLAY }),
       );
       mesh.visible = false;
       scene.add(mesh);
@@ -360,7 +478,7 @@ export default function Track3D({
       scene.add(fm.obj);
       sectorFlagMarkers.set(m.num, fm);
     }
-    const redMesh = new THREE.Mesh(ribbon(HALF_W + 9, -HALF_W - 9, 0, n, 0.09), new THREE.MeshBasicMaterial({ color: 0xff3b30, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+    const redMesh = new THREE.Mesh(ribbon(HALF_W + 9, -HALF_W - 9, 0, n, 0.09), new THREE.MeshBasicMaterial({ color: 0xff3b30, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false, ...OVERLAY }));
     redMesh.visible = false;
     scene.add(redMesh);
 
@@ -393,6 +511,78 @@ export default function Track3D({
     sc.add(scTag);
     sc.visible = false;
     scene.add(sc);
+
+    // ---------- Blender models: realistic circuit (when one exists) and car
+    let disposed = false;
+    let realistic = false;
+    if (hasCircuitModel(data.circuitId)) {
+      loadCircuitModel(data.circuitId!)
+        .then((gltf) => {
+          if (disposed) return;
+          const cl = gltf.scene.getObjectByName('Circuit')?.userData.centerline as number[] | undefined;
+          if (!cl) return;
+          // Blender ground plane (east, north) → three.js (x, -z)
+          const model = Float64Array.from(cl, (v, i) => (i % 2 ? -v : v));
+          const xs = new Float64Array(n);
+          const zs = new Float64Array(n);
+          const ys = new Float64Array(n);
+          const refPts = new Float64Array(2 * n);
+          for (let i = 0; i < n; i++) {
+            const v = toV(ref.x[i], ref.y[i]);
+            xs[i] = refPts[2 * i] = v.x;
+            zs[i] = refPts[2 * i + 1] = v.z;
+            ys[i] = vertY(i);
+          }
+          const fit = fitCenterline(model, refPts);
+          if (fit.rms > 25 || Math.abs(fit.scale - 1) > 0.15) {
+            console.warn('circuit model does not match this session, keeping the procedural track', fit);
+            return;
+          }
+          const circuit = drapeCircuit(gltf, fit, heightField(xs, zs, ys));
+          scene.add(circuit);
+          addTracedPitLane(circuit, pitPts);
+          for (const o of proc) o.visible = false;
+          realistic = true;
+          // daylight
+          scene.background = skyTexture();
+          renderer.toneMappingExposure = 0.95;
+          // countryside out to the horizon, beyond the modelled area
+          const land = new THREE.Mesh(new THREE.CircleGeometry(extent * 14, 64), new THREE.MeshStandardMaterial({ color: 0x4b7130, roughness: 1 }));
+          land.rotation.x = -Math.PI / 2;
+          land.position.y = -1.5;
+          land.receiveShadow = true;
+          scene.add(land);
+          fogColor = 0xdfe7f0;
+          fogNear = 1.8;
+          fogFar = 5;
+          scene.fog = new THREE.Fog(fogColor, homeDist * fogNear, homeDist * fogFar);
+          hemi.color.set(0xcfe0ff);
+          hemi.groundColor.set(0x3d4a2c);
+          hemi.intensity = 0.9;
+          sun.color.set(0xfff1dc);
+          sun.intensity = 3;
+          sun.castShadow = true;
+          sun.shadow.mapSize.set(2048, 2048);
+          sun.shadow.bias = -0.0004;
+          sun.shadow.normalBias = 0.4;
+        })
+        .catch((e) => console.warn('circuit model failed to load', e));
+    }
+    loadCarModel()
+      .then((gltf) => {
+        if (disposed) return;
+        for (const d of data.drivers) {
+          const c = cars.get(d.num)!;
+          const old = c.g.getObjectByName('body');
+          if (old) c.g.remove(old);
+          const body = carFromModel(gltf, d.color);
+          body.name = 'body';
+          c.g.add(body);
+        }
+      })
+      .catch(() => {}); // keep the box cars
+    const shadowDir = new THREE.Vector3(0.45, 1, 0.3).normalize();
+    let shadowHalf = 0;
 
     // ---------- interaction: pick a car
     const ray = new THREE.Raycaster();
@@ -466,7 +656,7 @@ export default function Track3D({
         if (ok) break;
       }
       controls.maxDistance = Math.max(extent * 4, homeDist * 1.5);
-      scene.fog = new THREE.Fog(0x07070a, homeDist * 1.2, homeDist * 3.2);
+      scene.fog = new THREE.Fog(fogColor, homeDist * fogNear, homeDist * fogFar);
       home();
     };
     fitHome();
@@ -530,6 +720,9 @@ export default function Track3D({
         c.g.visible = true;
         c.g.position.copy(toV(p.x, p.y, elevAt(frac) + 0.02));
         c.g.rotation.y = ang;
+        // roll the wheels with the distance covered
+        const wheels = c.g.getObjectByName('body')?.userData.wheels as THREE.Object3D[] | undefined;
+        if (wheels) for (const w of wheels) w.rotation.z = (-(frac * ref.lengthM) / WHEEL_RADIUS) % (Math.PI * 2);
         c.g.scale.setScalar(carScale * (sel.has(d.num) ? 1.15 : 1));
         const pos = liveOrder.get(d.num);
         const el = c.tag.element as HTMLElement;
@@ -608,6 +801,28 @@ export default function Track3D({
         chaseY = null;
         controls.update();
       }
+      // depth precision: push the near plane out when looking from far away
+      const near = m === 'chase' ? 0.3 : Math.min(40, Math.max(0.3, dist * 0.004));
+      if (Math.abs(near - camera.near) > camera.near * 0.05) {
+        camera.near = near;
+        camera.updateProjectionMatrix();
+      }
+      if (realistic) {
+        // sun shadows cover what the camera is looking at
+        const focus = m === 'chase' ? chaseLook : controls.target;
+        const half = Math.min(1600, Math.max(60, Math.round(dist * 0.7)));
+        sun.target.position.copy(focus);
+        sun.position.copy(focus).addScaledVector(shadowDir, half * 2);
+        if (Math.abs(half - shadowHalf) > shadowHalf * 0.1) {
+          shadowHalf = half;
+          const sc = sun.shadow.camera;
+          sc.left = sc.bottom = -half;
+          sc.right = sc.top = half;
+          sc.near = 1;
+          sc.far = half * 4;
+          sc.updateProjectionMatrix();
+        }
+      }
       // panels opened/closed or window resized: re-frame until the user takes over the camera
       if (applyOffset() && m === 'orbit' && !userMoved) {
         fitHome();
@@ -619,7 +834,9 @@ export default function Track3D({
     raf = requestAnimationFrame(loop);
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(raf);
+      (scene.background as THREE.Texture | null)?.dispose?.();
       ro.disconnect();
       labels.domElement.removeEventListener('pointerdown', onDown);
       labels.domElement.removeEventListener('pointerup', onUp);

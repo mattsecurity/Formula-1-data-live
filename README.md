@@ -9,6 +9,7 @@ Una web app in stile Apple Pro (Liquid Glass, grafica da broadcast, tema scuro) 
 ### Replay della sessione
 - Mappa del circuito ricostruita dalla telemetria, con bordi pista, cordoli bianco-rossi nelle curve strette, corsia box, piazzole della griglia, linea del traguardo, settori S1/S2/S3, zone DRS con linea di attivazione, frecce del senso di marcia, scala in metri e curve numerate con il loro nome (es. Variante del Rettifilo, Eau Rouge, Copse, 130R).
 - **Vista 3D del circuito** (pulsante 2D/3D o tasto P): asfalto, cordoli, corsia box, zone DRS, linea del traguardo e dislivelli reali ricavati dall'altitudine della telemetria (accentuati per renderli visibili). Tre camere: **Orbita** (ruoti e zoomi liberamente), **Insegui** (dietro la monoposto selezionata o al leader) e **Dall'alto**. Clicca una monoposto per selezionarla.
+- **Circuito e monoposto realistici modellati in Blender**: per Monza la vista 3D carica il circuito vero, ricostruito da OpenStreetMap: asfalto con linee bianche, cordoli, vie di fuga in ghiaia, guard-rail e reti, corsia box con muretto, 42 tribune (con tetto e colonne sul rettilineo), edifici del paddock e del paese e oltre 7.000 alberi del Parco. Il modello si allinea da solo alla telemetria di ogni sessione e segue i dislivelli reali. Cielo, sole e ombre in tempo reale. Le monoposto sono un modello 3D in stile 2026 nei colori del team, con le ruote che girano. Sugli altri circuiti resta la pista generata dalla telemetria.
 - **Bandiere per settore**: quando la direzione gara espone la gialla o la doppia gialla, il settore di commissari interessato si illumina sulla mappa (2D e 3D) con una bandierina che sventola. Con la bandiera rossa si colora tutto il tracciato. In basso, accanto ai controlli, una bandiera animata mostra sempre la situazione in pista (verde, gialla, doppia gialla, rossa, SC, VSC, scacchi) con il settore e la curva più vicina.
 - **Mappa velocità**: colora il tracciato in base alla velocità del giro di riferimento.
 - Quando zoomi, le monoposto diventano sagome viste dall'alto orientate nel senso di marcia. Le etichette mostrano posizione e sigla, come in TV.
@@ -83,6 +84,17 @@ src/
 ```
 Tecnologie: React, TypeScript, Vite, Framer Motion, Canvas 2D e three.js (vista 3D, caricata solo quando serve).
 
+### Modelli 3D (Blender)
+I modelli in `public/models/` sono generati da script Python per Blender (in `blender/`, provati con Blender 5.2), senza lavoro manuale:
+```bash
+# monoposto (public/models/car.glb)
+blender -b --factory-startup --python blender/car.py
+# circuito: dati OpenStreetMap (Overpass) → blender/monza.json → public/models/circuits/monza.glb
+python3 blender/osm_prep.py monza-overpass.json blender/monza.json 19842206 38168756
+blender -b --factory-startup --python blender/circuit.py -- blender/monza.json public/models/circuits/monza.glb
+```
+Il circuito è modellato piatto, in metri. Nell'app `src/replay/circuitModel.ts` trova la rototraslazione che sovrappone la linea centrale del modello al giro di riferimento della sessione, poi adagia le mesh `D_*` sull'altimetria della telemetria. Per aggiungere un circuito: scarica i dati OSM della zona, crea il json con l'id della via del rettilineo di partenza e registra il file in `CIRCUIT_MODELS`.
+
 ### Come funziona la classifica live
 Ogni campione di posizione viene proiettato sul tracciato di riferimento, ricostruito da un giro pulito, e trasformato in "distanza di gara" (es. 23,47 giri). La classifica ordina i piloti per questa distanza in ogni istante. Una piccola tolleranza evita sfarfallii quando due auto sono affiancate. I distacchi in secondi si calcolano confrontando quando ciascuna auto è passata dallo stesso punto della pista.
 
@@ -90,4 +102,5 @@ Ogni campione di posizione viene proiettato sul tracciato di riferimento, ricost
 - Progetto originale: [IAmTomShaw/f1-race-replay](https://github.com/IAmTomShaw/f1-race-replay) e i suoi [contributor](https://github.com/IAmTomShaw/f1-race-replay/blob/main/contributors.md).
 - Dati: [OpenF1](https://openf1.org).
 - Tracciati: [bacinger/f1-circuits](https://github.com/bacinger/f1-circuits) di Tomislav Bacinger (MIT).
+- Modello 3D di Monza: dati © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL).
 - Progetto non ufficiale e senza scopo di lucro. Formula 1, F1 e i marchi correlati appartengono ai rispettivi proprietari.
