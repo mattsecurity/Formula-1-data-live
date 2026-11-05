@@ -1,0 +1,56 @@
+[
+  {
+    "tile": "3333-424",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-424.laz",
+    "bytes": 26412633,
+    "sha256": "d0ae56c1c949536f3636e41b3c31df1920918283c070d2cefe74dc87a701ad43"
+  },
+  {
+    "tile": "3333-433",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-433.laz",
+    "bytes": 25736267,
+    "sha256": "fa3e2edc4c1f988522c527e896d55ff0113facb605c2dd8a0d5195cbcdb537ec"
+  },
+  {
+    "tile": "3333-434",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-434.laz",
+    "bytes": 33655975,
+    "sha256": "1d8f17906ac2c0b8666eb2d7829e67c89c8d9a0d632c862b1cd843eeb55e4fe7"
+  },
+  {
+    "tile": "3333-452",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-452.laz",
+    "bytes": 25874560,
+    "sha256": "ca07c013356f51def32f8bcdee16a339c500be0b90ed04aa30f9a75485aa1211"
+  },
+  {
+    "tile": "3333-454",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-454.laz",
+    "bytes": 26512464,
+    "sha256": "819393bdd63dcf11d081b96b00851d9421f7917e676aad756242b86c646ff1a1"
+  },
+  {
+    "tile": "3333-461",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-461.laz",
+    "bytes": 26069804,
+    "sha256": "9403747e6628b99b7f9d88c673ac78057e0b4cc0cc7001a36be96a1a2af46573"
+  },
+  {
+    "tile": "3333-462",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-462.laz",
+    "bytes": 35397878,
+    "sha256": "ebfbc7d63c7cc14c419e0ea1c20c968e2138c2c1f92e8a6af4d6a927d50de031"
+  },
+  {
+    "tile": "3333-463",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-463.laz",
+    "bytes": 27687891,
+    "sha256": "caa81baef45b976b0dd6a3f8ce79fadf57559b77dd7466bc82eabbdd41f6ae90"
+  },
+  {
+    "tile": "3333-464",
+    "url": "https://laz-m3dc-pmsp.s3-sa-east-1.amazonaws.com/MDS_color_3333-464.laz",
+    "bytes": 38099023,
+    "sha256": "94efa7c6587e9cbb459d7470d51483c5225a93037e713560ddbb62656b3a1641"
+  }
+]

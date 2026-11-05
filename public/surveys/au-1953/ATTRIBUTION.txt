@@ -1,0 +1,6 @@
+City of Melbourne, City of Melbourne 3D Textured Mesh (Photomesh) 2020, tile E5-20.
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+https://creativecommons.org/licenses/by/4.0/
+Source: https://data.melbourne.vic.gov.au/explore/dataset/city-of-melbourne-3d-textured-mesh-photomesh-2020/
+Modifications: georeferenced local conversion, geometry/UV quantization, photographic texture resampling and atlasing.
+Nearby Melbourne context only; this tile does not cover the Albert Park circuit.

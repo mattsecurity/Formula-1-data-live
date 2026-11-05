@@ -1,0 +1,742 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-05T06:00:31.394141+00:00",
+  "circuits": {
+    "nl-1948": {
+      "sourceUrl": "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0",
+      "layer": "2025_orthoHR",
+      "capture": "2025 winter aerial campaign",
+      "attribution": "Luchtfoto 2025 \u00a9 Beeldmateriaal / PDOK, CC BY 4.0",
+      "licenseEvidenceUrl": "https://www.pdok.nl/introductie/-/article/pdok-luchtfoto-rgb-open-",
+      "nativeResolutionMeters": [
+        0.05,
+        0.08
+      ],
+      "nativeResolutionNote": "National 2025 winter product uses 5 or 8cm; local acquisition GSD is not distinguished by this layer.",
+      "url": "orthophotos/nl-1948.jpg",
+      "bbox4326": [
+        4.529174778731764,
+        52.37852397736256,
+        4.562628221268236,
+        52.397650022637436
+      ],
+      "bbox3857": [
+        504185.4300821575,
+        6868858.959092364,
+        507909.4502705995,
+        6872347.517476253
+      ],
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "pixels": [
+        4096,
+        3837
+      ],
+      "projection": "EPSG:3857",
+      "northUp": true,
+      "jpegQuality": 85,
+      "pixelSize3857Meters": [
+        0.9091846163188535,
+        0.9091890497496733
+      ],
+      "approximateGroundResolutionMeters": [
+        0.5548843581063969,
+        0.5548870638730482
+      ],
+      "description": "Foto aerea ortorettificata del circuito e dei dintorni.",
+      "assetType": "photographic ground orthophoto",
+      "limitations": "2D ground and roof photography; no photographic facades or 3D mesh.",
+      "modifications": "Cropped to circuit environment bbox; resampled to working LOD; stitched and JPEG recompressed.",
+      "bytes": 3525551,
+      "sha256": "f7d5028b3eccc0dfef5a9e3ad0cfabaa2ec7e9ed6b7c524e156ee62cae33b159",
+      "preparedWith": "python scripts/fetch-orthophotos.py",
+      "sourceRequests": [
+        {
+          "url": "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025_orthoHR&STYLES=&SRS=EPSG%3A3857&BBOX=504185.4300821575%2C6870485.498302366%2C506047.44017637847%2C6872347.517476253&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            504185.4300821575,
+            6870485.498302366,
+            506047.44017637847,
+            6872347.517476253
+          ],
+          "pixelOffset": [
+            0,
+            0
+          ],
+          "layer": "2025_orthoHR",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:27.821909+00:00",
+          "sha256": "be0c36db1545d5b9669f471a71714cc2b1eae7d8edbb017b95dcc351d92295c7"
+        },
+        {
+          "url": "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025_orthoHR&STYLES=&SRS=EPSG%3A3857&BBOX=506047.44017637847%2C6870485.498302366%2C507909.4502705995%2C6872347.517476253&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            506047.44017637847,
+            6870485.498302366,
+            507909.4502705995,
+            6872347.517476253
+          ],
+          "pixelOffset": [
+            2048,
+            0
+          ],
+          "layer": "2025_orthoHR",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:34.831787+00:00",
+          "sha256": "739038e8249f965c68bf2069995b03fa821a6ac94e43ba4989da9baa331cd255"
+        },
+        {
+          "url": "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025_orthoHR&STYLES=&SRS=EPSG%3A3857&BBOX=504185.4300821575%2C6868858.959092364%2C506047.44017637847%2C6870485.498302366&WIDTH=2048&HEIGHT=1789&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            504185.4300821575,
+            6868858.959092364,
+            506047.44017637847,
+            6870485.498302366
+          ],
+          "pixelOffset": [
+            0,
+            2048
+          ],
+          "layer": "2025_orthoHR",
+          "pixels": [
+            2048,
+            1789
+          ],
+          "fetchedAt": "2026-11-05T05:55:41.527424+00:00",
+          "sha256": "0811e8963059ebe7e88b065215aca8a96531dc771bdfd2179ac79115e1ab53cc"
+        },
+        {
+          "url": "https://service.pdok.nl/hwh/luchtfotorgb/wms/v1_0?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=2025_orthoHR&STYLES=&SRS=EPSG%3A3857&BBOX=506047.44017637847%2C6868858.959092364%2C507909.4502705995%2C6870485.498302366&WIDTH=2048&HEIGHT=1789&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            506047.44017637847,
+            6868858.959092364,
+            507909.4502705995,
+            6870485.498302366
+          ],
+          "pixelOffset": [
+            2048,
+            2048
+          ],
+          "layer": "2025_orthoHR",
+          "pixels": [
+            2048,
+            1789
+          ],
+          "fetchedAt": "2026-11-05T05:55:46.629604+00:00",
+          "sha256": "11e0622a92dd5fdbda0f6f05a0cce66a48e593aeb8728c75cf1e6d009be0b2fb"
+        }
+      ],
+      "validation": {
+        "circuitOutlineSamples": 119,
+        "noDataOutlineFraction": 0.0,
+        "allSourceTilesNonconstant": true,
+        "sourceAlphaCoversFullBbox": null
+      }
+    },
+    "es-1991": {
+      "sourceUrl": "https://geoserveis.icgc.cat/servei/catalunya/orto-territorial/wms",
+      "layer": "ortofoto_25cm_color_2025",
+      "capture": "2025 aerial campaign",
+      "attribution": "Ortofoto Territorial 2025 \u00a9 ICGC, CC BY 4.0",
+      "licenseEvidenceUrl": "https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Imatge/Ortofoto-Territorial",
+      "nativeResolutionMeters": 0.25,
+      "url": "orthophotos/es-1991.jpg",
+      "bbox4326": [
+        2.244329459238225,
+        41.55834797736256,
+        2.271473540761775,
+        41.580591022637435
+      ],
+      "bbox3857": [
+        249837.6125747422,
+        5095049.991372838,
+        252859.27790799493,
+        5098359.593298096
+      ],
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "pixels": [
+        3740,
+        4096
+      ],
+      "projection": "EPSG:3857",
+      "northUp": true,
+      "jpegQuality": 85,
+      "pixelSize3857Meters": [
+        0.8079319072868236,
+        0.8080082825338195
+      ],
+      "approximateGroundResolutionMeters": [
+        0.6044556804521015,
+        0.6045128207277563
+      ],
+      "description": "Foto aerea ortorettificata del circuito e dei dintorni.",
+      "assetType": "photographic ground orthophoto",
+      "limitations": "2D ground and roof photography; no photographic facades or 3D mesh.",
+      "modifications": "Cropped to circuit environment bbox; resampled to working LOD; stitched and JPEG recompressed.",
+      "bytes": 4918570,
+      "sha256": "979ba0e67e15d26ed5a0f68a23c262c1576b00f2160ce8b75ce5b7a6aecf317a",
+      "preparedWith": "python scripts/fetch-orthophotos.py",
+      "sourceRequests": [
+        {
+          "url": "https://geoserveis.icgc.cat/servei/catalunya/orto-territorial/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=ortofoto_25cm_color_2025&STYLES=&SRS=EPSG%3A3857&BBOX=249837.6125747422%2C5096704.792335467%2C251492.25712086563%2C5098359.593298096&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            249837.6125747422,
+            5096704.792335467,
+            251492.25712086563,
+            5098359.593298096
+          ],
+          "pixelOffset": [
+            0,
+            0
+          ],
+          "layer": "ortofoto_25cm_color_2025",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:31.882977+00:00",
+          "sha256": "fafad79a24dce0b3bf1053b2e6cce383f9ea27a3c998fa0e30ad090cc60f4e43"
+        },
+        {
+          "url": "https://geoserveis.icgc.cat/servei/catalunya/orto-territorial/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=ortofoto_25cm_color_2025&STYLES=&SRS=EPSG%3A3857&BBOX=251492.25712086563%2C5096704.792335467%2C252859.27790799493%2C5098359.593298096&WIDTH=1692&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            251492.25712086563,
+            5096704.792335467,
+            252859.27790799493,
+            5098359.593298096
+          ],
+          "pixelOffset": [
+            2048,
+            0
+          ],
+          "layer": "ortofoto_25cm_color_2025",
+          "pixels": [
+            1692,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:35.126329+00:00",
+          "sha256": "44da7fdce1f74efb45f30113c075b51f432ff54dcbd3f2907c638f6957e5e95d"
+        },
+        {
+          "url": "https://geoserveis.icgc.cat/servei/catalunya/orto-territorial/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=ortofoto_25cm_color_2025&STYLES=&SRS=EPSG%3A3857&BBOX=249837.6125747422%2C5095049.991372838%2C251492.25712086563%2C5096704.792335467&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            249837.6125747422,
+            5095049.991372838,
+            251492.25712086563,
+            5096704.792335467
+          ],
+          "pixelOffset": [
+            0,
+            2048
+          ],
+          "layer": "ortofoto_25cm_color_2025",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:39.600418+00:00",
+          "sha256": "26f40bb3de3b8b1c625fca854528197975c36ba81e4284126dda0ec8985986c0"
+        },
+        {
+          "url": "https://geoserveis.icgc.cat/servei/catalunya/orto-territorial/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=ortofoto_25cm_color_2025&STYLES=&SRS=EPSG%3A3857&BBOX=251492.25712086563%2C5095049.991372838%2C252859.27790799493%2C5096704.792335467&WIDTH=1692&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            251492.25712086563,
+            5095049.991372838,
+            252859.27790799493,
+            5096704.792335467
+          ],
+          "pixelOffset": [
+            2048,
+            2048
+          ],
+          "layer": "ortofoto_25cm_color_2025",
+          "pixels": [
+            1692,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:44.068950+00:00",
+          "sha256": "b96c9e2b54fddd094a5f96a06d6038dbe901724b4ef4c9f53f33e97830cbc6c4"
+        }
+      ],
+      "validation": {
+        "circuitOutlineSamples": 150,
+        "noDataOutlineFraction": 0.0,
+        "allSourceTilesNonconstant": true,
+        "sourceAlphaCoversFullBbox": null
+      }
+    },
+    "it-1953": {
+      "sourceUrl": "https://servizigis.regione.emilia-romagna.it/wms/rer2022_rgb",
+      "layer": "RER2022_RGB",
+      "capture": "2022-03 Imola survey; 2023\u201324 imagery fills its surrounding no-data",
+      "attribution": "Ortofoto RER 2022 / 2023\u201324 \u00a9 Regione Emilia-Romagna / CGR, CC BY 4.0",
+      "licenseEvidenceUrl": "https://geoportale.regione.emilia-romagna.it/catalogo/dati-cartografici/cartografia-di-base/immagini/layer-10",
+      "captureEvidenceUrl": "https://geoportale.regione.emilia-romagna.it/approfondimenti/prodotti-lidar-e-ortofoto",
+      "nativeResolutionMeters": 0.2,
+      "additionalSources": [
+        {
+          "sourceUrl": "https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb",
+          "layer": "RER2023_24_RGB",
+          "capture": "2023\u201324 aerial campaign",
+          "attribution": "Ortofoto RER 2023\u201324 \u00a9 Regione Emilia-Romagna, CC BY 4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseEvidenceUrl": "https://geoportale.regione.emilia-romagna.it/catalogo/dati-cartografici/cartografia-di-base/immagini/layer-14",
+          "nativeResolutionMeters": 0.2
+        }
+      ],
+      "complementaryCoverageFraction": 0.2879920564490378,
+      "url": "orthophotos/it-1953.jpg",
+      "bbox4326": [
+        11.693867750875798,
+        44.33066897736256,
+        11.733319249124204,
+        44.350893022637436
+      ],
+      "bbox3857": [
+        1301755.4034313771,
+        5516757.383631908,
+        1306147.1241274213,
+        5519905.237084874
+      ],
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "pixels": [
+        4096,
+        2936
+      ],
+      "projection": "EPSG:3857",
+      "northUp": true,
+      "jpegQuality": 85,
+      "pixelSize3857Meters": [
+        1.072197435557655,
+        1.0721571706286162
+      ],
+      "approximateGroundResolutionMeters": [
+        0.7668307236530728,
+        0.7668019263591709
+      ],
+      "description": "Foto aerea ortorettificata del circuito e dei dintorni.",
+      "assetType": "photographic ground orthophoto",
+      "limitations": "2D ground and roof photography; no photographic facades or 3D mesh.",
+      "modifications": "Cropped to circuit environment bbox; resampled to working LOD; stitched and JPEG recompressed.",
+      "bytes": 3091745,
+      "sha256": "8d2a231d71866546d0fe8ab5adefeaceeb549c0a7705e98b16d9d09cd4236752",
+      "preparedWith": "python scripts/fetch-orthophotos.py",
+      "sourceRequests": [
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2022_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2022_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1301755.4034313771%2C5517709.459199427%2C1303951.2637793992%2C5519905.237084874&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "bbox3857": [
+            1301755.4034313771,
+            5517709.459199427,
+            1303951.2637793992,
+            5519905.237084874
+          ],
+          "pixelOffset": [
+            0,
+            0
+          ],
+          "layer": "RER2022_RGB",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:58:50.645362+00:00",
+          "sha256": "3c951c46b7b730a9f52701710d190aa3a5fbb73e5000b7c5463a5be350863731"
+        },
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2023_24_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1303951.2637793992%2C5517709.459199427%2C1306147.1241274213%2C5519905.237084874&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "layer": "RER2023_24_RGB",
+          "purpose": "fill declared transparent no-data in RER2022",
+          "bbox3857": [
+            1303951.2637793992,
+            5517709.459199427,
+            1306147.1241274213,
+            5519905.237084874
+          ],
+          "pixelOffset": [
+            2048,
+            0
+          ],
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:59:04.777906+00:00",
+          "sha256": "60cd09fb68b8144314b726d4d3d492cbdb98087b6ca6577c5e968bbb78e2352a"
+        },
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2022_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2022_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1303951.2637793992%2C5517709.459199427%2C1306147.1241274213%2C5519905.237084874&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "bbox3857": [
+            1303951.2637793992,
+            5517709.459199427,
+            1306147.1241274213,
+            5519905.237084874
+          ],
+          "pixelOffset": [
+            2048,
+            0
+          ],
+          "layer": "RER2022_RGB",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:58:56.833025+00:00",
+          "sha256": "17082b242fa1b9824b0ba6ac22ac2b955234edbf6919f7c9274250c61ca29433"
+        },
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2023_24_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1301755.4034313771%2C5516757.383631908%2C1303951.2637793992%2C5517709.459199427&WIDTH=2048&HEIGHT=888&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "layer": "RER2023_24_RGB",
+          "purpose": "fill declared transparent no-data in RER2022",
+          "bbox3857": [
+            1301755.4034313771,
+            5516757.383631908,
+            1303951.2637793992,
+            5517709.459199427
+          ],
+          "pixelOffset": [
+            0,
+            2048
+          ],
+          "pixels": [
+            2048,
+            888
+          ],
+          "fetchedAt": "2026-11-05T05:59:12.421379+00:00",
+          "sha256": "f5a8c904597f5fd23e0de0d0823f113cacece3d2d3fc37cbb800364de2672e8b"
+        },
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2022_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2022_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1301755.4034313771%2C5516757.383631908%2C1303951.2637793992%2C5517709.459199427&WIDTH=2048&HEIGHT=888&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "bbox3857": [
+            1301755.4034313771,
+            5516757.383631908,
+            1303951.2637793992,
+            5517709.459199427
+          ],
+          "pixelOffset": [
+            0,
+            2048
+          ],
+          "layer": "RER2022_RGB",
+          "pixels": [
+            2048,
+            888
+          ],
+          "fetchedAt": "2026-11-05T05:59:07.845828+00:00",
+          "sha256": "8882fe5dc8f7ad2fbab097de9806fe5d826af2ae6105d775ead8fabcbcdf964a"
+        },
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2023_24_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2023_24_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1303951.2637793992%2C5516757.383631908%2C1306147.1241274213%2C5517709.459199427&WIDTH=2048&HEIGHT=888&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "layer": "RER2023_24_RGB",
+          "purpose": "fill declared transparent no-data in RER2022",
+          "bbox3857": [
+            1303951.2637793992,
+            5516757.383631908,
+            1306147.1241274213,
+            5517709.459199427
+          ],
+          "pixelOffset": [
+            2048,
+            2048
+          ],
+          "pixels": [
+            2048,
+            888
+          ],
+          "fetchedAt": "2026-11-05T05:59:17.532903+00:00",
+          "sha256": "5a63f8e582ab70047b56f74066355e1900acfba55694d19e5a27387ed3aa72d4"
+        },
+        {
+          "url": "https://servizigis.regione.emilia-romagna.it/wms/rer2022_rgb?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=RER2022_RGB&STYLES=&SRS=EPSG%3A3857&BBOX=1303951.2637793992%2C5516757.383631908%2C1306147.1241274213%2C5517709.459199427&WIDTH=2048&HEIGHT=888&FORMAT=image%2Fpng&TRANSPARENT=TRUE",
+          "bbox3857": [
+            1303951.2637793992,
+            5516757.383631908,
+            1306147.1241274213,
+            5517709.459199427
+          ],
+          "pixelOffset": [
+            2048,
+            2048
+          ],
+          "layer": "RER2022_RGB",
+          "pixels": [
+            2048,
+            888
+          ],
+          "fetchedAt": "2026-11-05T05:59:13.368623+00:00",
+          "sha256": "478f5617d9cb4a257eca252592db2e94f32668e2d2ede45790cb7d1a74586187"
+        }
+      ],
+      "validation": {
+        "circuitOutlineSamples": 84,
+        "noDataOutlineFraction": 0.0,
+        "allSourceTilesNonconstant": true,
+        "sourceAlphaCoversFullBbox": true
+      }
+    },
+    "es-2026": {
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma",
+      "layer": "OI.OrthoimageCoverage",
+      "capture": "2023-07 (verified at center and four bbox corners)",
+      "attribution": "Obra derivada de PNOA 2023-07 CC BY 4.0 scne.es (IGN)",
+      "licenseEvidenceUrl": "https://www.ign.es/resources/licencia/Condiciones_licenciaUso_IGN.pdf",
+      "nativeResolutionMeters": 0.25,
+      "captureMetadataSamples": [
+        {
+          "coordinate4326": [
+            -3.618664,
+            40.4724595
+          ],
+          "properties": [
+            {
+              "Fecha": "2023-07",
+              "Resolucion": "0.25"
+            }
+          ],
+          "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=OI.MosaicElement&QUERY_LAYERS=OI.MosaicElement&STYLES=&SRS=EPSG%3A4326&BBOX=-3.6187139999999998%2C40.4724095%2C-3.618614%2C40.4725095&WIDTH=100&HEIGHT=100&X=50&Y=50&FORMAT=image%2Fjpeg&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=5"
+        },
+        {
+          "coordinate4326": [
+            -3.6329157069309743,
+            40.458538977362565
+          ],
+          "properties": [
+            {
+              "Fecha": "2023-07",
+              "Resolucion": "0.25"
+            }
+          ],
+          "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=OI.MosaicElement&QUERY_LAYERS=OI.MosaicElement&STYLES=&SRS=EPSG%3A4326&BBOX=-3.632965706930974%2C40.45848897736256%2C-3.6328657069309744%2C40.45858897736257&WIDTH=100&HEIGHT=100&X=50&Y=50&FORMAT=image%2Fjpeg&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=5"
+        },
+        {
+          "coordinate4326": [
+            -3.604412293069026,
+            40.458538977362565
+          ],
+          "properties": [
+            {
+              "Fecha": "2023-07",
+              "Resolucion": "0.25"
+            }
+          ],
+          "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=OI.MosaicElement&QUERY_LAYERS=OI.MosaicElement&STYLES=&SRS=EPSG%3A4326&BBOX=-3.6044622930690258%2C40.45848897736256%2C-3.604362293069026%2C40.45858897736257&WIDTH=100&HEIGHT=100&X=50&Y=50&FORMAT=image%2Fjpeg&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=5"
+        },
+        {
+          "coordinate4326": [
+            -3.6329157069309743,
+            40.486380022637434
+          ],
+          "properties": [
+            {
+              "Fecha": "2023-07",
+              "Resolucion": "0.25"
+            }
+          ],
+          "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=OI.MosaicElement&QUERY_LAYERS=OI.MosaicElement&STYLES=&SRS=EPSG%3A4326&BBOX=-3.632965706930974%2C40.48633002263743%2C-3.6328657069309744%2C40.486430022637435&WIDTH=100&HEIGHT=100&X=50&Y=50&FORMAT=image%2Fjpeg&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=5"
+        },
+        {
+          "coordinate4326": [
+            -3.604412293069026,
+            40.486380022637434
+          ],
+          "properties": [
+            {
+              "Fecha": "2023-07",
+              "Resolucion": "0.25"
+            }
+          ],
+          "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=OI.MosaicElement&QUERY_LAYERS=OI.MosaicElement&STYLES=&SRS=EPSG%3A4326&BBOX=-3.6044622930690258%2C40.48633002263743%2C-3.604362293069026%2C40.486430022637435&WIDTH=100&HEIGHT=100&X=50&Y=50&FORMAT=image%2Fjpeg&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=5"
+        }
+      ],
+      "url": "orthophotos/es-2026.jpg",
+      "bbox4326": [
+        -3.6330157069309745,
+        40.45843897736256,
+        -3.6043122930690257,
+        40.48648002263744
+      ],
+      "bbox3857": [
+        -404425.4585395209,
+        4932786.740957012,
+        -401230.20912438014,
+        4936890.120599295
+      ],
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "pixels": [
+        3190,
+        4096
+      ],
+      "projection": "EPSG:3857",
+      "northUp": true,
+      "jpegQuality": 85,
+      "pixelSize3857Meters": [
+        1.001645584683628,
+        1.0018016704791535
+      ],
+      "approximateGroundResolutionMeters": [
+        0.7619698754682457,
+        0.762088612750172
+      ],
+      "description": "Foto aerea dell\u2019area di Madrid del luglio 2023, precedente al circuito. Tracciato sovrapposto indicativo.",
+      "assetType": "photographic ground orthophoto",
+      "limitations": "2D ground and roof photography; no photographic facades or 3D mesh.",
+      "modifications": "Cropped to circuit environment bbox; resampled to working LOD; stitched and JPEG recompressed.",
+      "bytes": 3436728,
+      "sha256": "36d5f8267165afc78257bba343ee38ecd841da19858d509a7c6c3529f5d10b20",
+      "preparedWith": "python scripts/fetch-orthophotos.py",
+      "sourceRequests": [
+        {
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&SRS=EPSG%3A3857&BBOX=-404425.4585395209%2C4934838.430778153%2C-402374.08838208887%2C4936890.120599295&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            -404425.4585395209,
+            4934838.430778153,
+            -402374.08838208887,
+            4936890.120599295
+          ],
+          "pixelOffset": [
+            0,
+            0
+          ],
+          "layer": "OI.OrthoimageCoverage",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:31.421120+00:00",
+          "sha256": "c9cab6c82934c2423c9ea3f78656014a692797becaae497b649729b3e9b4adca"
+        },
+        {
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&SRS=EPSG%3A3857&BBOX=-402374.08838208887%2C4934838.430778153%2C-401230.20912438014%2C4936890.120599295&WIDTH=1142&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            -402374.08838208887,
+            4934838.430778153,
+            -401230.20912438014,
+            4936890.120599295
+          ],
+          "pixelOffset": [
+            2048,
+            0
+          ],
+          "layer": "OI.OrthoimageCoverage",
+          "pixels": [
+            1142,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:35.427582+00:00",
+          "sha256": "78ac3a1d377c4a2aee3aa27060652906577c12b1a158f70713f42f2948e2083f"
+        },
+        {
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&SRS=EPSG%3A3857&BBOX=-404425.4585395209%2C4932786.740957012%2C-402374.08838208887%2C4934838.430778153&WIDTH=2048&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            -404425.4585395209,
+            4932786.740957012,
+            -402374.08838208887,
+            4934838.430778153
+          ],
+          "pixelOffset": [
+            0,
+            2048
+          ],
+          "layer": "OI.OrthoimageCoverage",
+          "pixels": [
+            2048,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:42.039552+00:00",
+          "sha256": "07e802f4800b5566ead73f8a947421dd256b4c46bf9630e0b3a5dae2c49ecd0d"
+        },
+        {
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&SRS=EPSG%3A3857&BBOX=-402374.08838208887%2C4932786.740957012%2C-401230.20912438014%2C4934838.430778153&WIDTH=1142&HEIGHT=2048&FORMAT=image%2Fjpeg",
+          "bbox3857": [
+            -402374.08838208887,
+            4932786.740957012,
+            -401230.20912438014,
+            4934838.430778153
+          ],
+          "pixelOffset": [
+            2048,
+            2048
+          ],
+          "layer": "OI.OrthoimageCoverage",
+          "pixels": [
+            1142,
+            2048
+          ],
+          "fetchedAt": "2026-11-05T05:55:45.481806+00:00",
+          "sha256": "b8e9d08df6af68f28dd12b21be4cb1bc04045402203e3b5f7876f91cfc93cb99"
+        }
+      ],
+      "validation": {
+        "circuitOutlineSamples": 116,
+        "noDataOutlineFraction": 0.0,
+        "allSourceTilesNonconstant": true,
+        "sourceAlphaCoversFullBbox": null
+      },
+      "showTrackOverlay": true
+    },
+    "at-1969": {
+      "url": "orthophotos/at-1969.jpg",
+      "bbox3857": [
+        1641457.7128671184,
+        5976982.677802255,
+        1645218.6535244659,
+        5980062.851176433
+      ],
+      "attribution": "Datenquelle: basemap.at (CC BY 4.0)",
+      "attributionUrl": "https://basemap.at/",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceUrl": "https://mapsneu.wien.gv.at/basemap/1.0.0/WMTSCapabilities.xml",
+      "capture": "2022 labels embedded in source imagery. Regional flight metadata at circuit centre: 2022-07-20 (2022260_Zeltweg); exact mosaic-wide acquisition dates are not separately verified.",
+      "description": "Actual aerial orthophotography of the complete Red Bull Ring environment extent; 2D photographed ground, not a photographic 3D mesh. Provider year labels retained. Product-wide source maximum pixel size 29 cm (15 cm in selected regions); this bounded replay texture is sampled at WMTS zoom 17.",
+      "retrievedAt": "2026-11-05T05:57:47.658737+00:00",
+      "width": 3149,
+      "height": 2579,
+      "pixels": [
+        3149,
+        2579
+      ],
+      "projection": "EPSG:3857",
+      "northUp": true,
+      "license": "CC-BY-4.0",
+      "licenseEvidenceUrl": "https://basemap.at/#nutzungsbedingungen",
+      "bbox4326Requested": [
+        14.745471353015779,
+        47.21344497736256,
+        14.77924564698422,
+        47.23222702263744
+      ],
+      "tileTemplate": "https://maps.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg",
+      "tileRange": {
+        "zoom": 17,
+        "minX": 70904,
+        "maxX": 70916,
+        "minY": 45977,
+        "maxY": 45987
+      },
+      "metresPerPixel3857": 1.194328566955879,
+      "approximateGroundResolutionMeters": [
+        0.811118617895883,
+        0.811118617895883
+      ],
+      "modifications": "Bounded WMTS tile mosaic cropped to the environment extent and JPEG recompressed; embedded provider year labels preserved.",
+      "validation": {
+        "circuitOutlineSamples": 81,
+        "completeEnvironmentExtent": true,
+        "nonconstantImage": true
+      },
+      "bytes": 1379018,
+      "sha256": "6fa253ff24cdb0374e2ce5c0e78f04e00d4460216fc18012aa717f2254232e99",
+      "preparedWith": "python scripts/prepare-austria-orthophoto.py"
+    }
+  },
+  "totalImageBytes": 16351612,
+  "managedImageBytes": 14972594
+}
