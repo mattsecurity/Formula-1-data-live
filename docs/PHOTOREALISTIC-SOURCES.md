@@ -1,5 +1,12 @@
 # Photorealistic 3D sources
 
+**5 November update:** see the [25-circuit acquisition audit](research/README.md)
+for actual model listings, checked coverage polygons, prices, downloaded survey
+samples and regional source reports. The Melbourne municipal index has now
+been checked: none of the 146 Albert Park outline vertices lies within its
+coverage. MetroMap's commercial 2025 coverage does contain all 146 vertices,
+but its standard licence does not authorize this public web delivery.
+
 Official documentation reviewed on **4 November 2026**. The application uses
 Three.js. A configurable 3D Tiles URL is an integration point for an independently
 authorized dataset; it does not supply a dataset, credentials, or a licence.
