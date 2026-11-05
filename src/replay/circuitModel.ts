@@ -162,6 +162,11 @@ export function drapeCircuit(gltf: GLTF, fit: GroundFit, field: HeightField): TH
   const v = new THREE.Vector3();
   const q = new THREE.Quaternion();
   const s = new THREE.Vector3();
+  // town, park, roads and outer ground: hidden by the "Solo autodromo" toggle
+  const isSurroundings = (o: THREE.Object3D) => {
+    for (let p: THREE.Object3D | null = o; p; p = p.parent) if (/^(Building_|Trees|D_Ground|D_Road_)/.test(p.name)) return true;
+    return false;
+  };
   src.traverse((o) => {
     if (!(o as THREE.Mesh).isMesh) return;
     const mesh = o as THREE.Mesh;
@@ -183,6 +188,7 @@ export function drapeCircuit(gltf: GLTF, fit: GroundFit, field: HeightField): TH
       copy.computeBoundingSphere();
       copy.castShadow = true;
       copy.name = im.name;
+      copy.userData.surroundings = true;
       out.add(copy);
       return;
     }
@@ -206,7 +212,10 @@ export function drapeCircuit(gltf: GLTF, fit: GroundFit, field: HeightField): TH
       for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i);
         const z = pos.getZ(i);
-        const sink = ground ? 0.3 + 1.0 * (1 - smoothstep(30, 50, field.dist(x, z))) : 0;
+        // the 3D view uses a logarithmic depth buffer, which ignores polygon offset: stack the
+      // coplanar layers (gravel, roads, pit lane over the grass verge) a few centimetres apart
+      const lift = /^D_(Gravel|Road)/.test(name) ? 0.04 : name.startsWith('D_PitLane') ? 0.06 : 0;
+      const sink = (ground ? 0.3 + 1.0 * (1 - smoothstep(30, 50, field.dist(x, z))) : 0) - lift;
         pos.setY(i, pos.getY(i) + height(x, z) - sink);
       }
       geo.computeVertexNormals();
@@ -218,6 +227,7 @@ export function drapeCircuit(gltf: GLTF, fit: GroundFit, field: HeightField): TH
     geo.computeBoundingSphere();
     const copy = new THREE.Mesh(geo, mesh.material);
     copy.name = mesh.name;
+    copy.userData.surroundings = isSurroundings(mesh);
     copy.receiveShadow = true;
     copy.castShadow = !flat;
     out.add(copy);

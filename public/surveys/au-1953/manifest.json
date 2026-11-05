@@ -1,0 +1,117 @@
+{
+  "checkedAt": "2026-11-05T05:44:41.238884+00:00",
+  "title": "City of Melbourne Photomesh 2020 \u2014 E5-20",
+  "provider": "City of Melbourne",
+  "sourceUrl": "https://gis-3dmodelcapture-2020.s3.ap-southeast-2.amazonaws.com/photomesh/OBJ/E5-20.zip",
+  "indexLayer": "https://services1.arcgis.com/KGdHCCUjGBpOPPac/arcgis/rest/services/Photomesh_2020_OBJ_Grid/FeatureServer/0",
+  "indexObjectId": 562,
+  "license": "CC-BY-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "licenseEvidenceUrl": "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/city-of-melbourne-3d-textured-mesh-photomesh-2020",
+  "capture": "May 2020 per catalogue; OBJ creation comment May 2021 is processing, not capture",
+  "horizontalFrame": "MGA Zone 55 per catalogue; OBJ vertices east/north/up",
+  "verticalDatum": "AHD",
+  "bboxWgs84": [
+    144.975304892752,
+    -37.8463275487277,
+    144.978554311601,
+    -37.8437507875278
+  ],
+  "polygonWgs84": [
+    [
+      144.975304892752,
+      -37.8462728865579
+    ],
+    [
+      144.975373876448,
+      -37.8437507875278
+    ],
+    [
+      144.978554311601,
+      -37.8438054447626
+    ],
+    [
+      144.978485436088,
+      -37.8463275487277
+    ],
+    [
+      144.975304892752,
+      -37.8462728865579
+    ]
+  ],
+  "coversAlbertParkCircuit": false,
+  "approximateMinimumCircuitToTileBBoxMetres": 204,
+  "bytes": 62877538,
+  "sha256": "68238158f3af2678f315302d9225e4ff449ce4b98cf8f7b6b4baae365db0cbd2",
+  "uncompressedBytes": 158362622,
+  "objCounts": {
+    "v": 253245,
+    "vt": 1477071,
+    "vn": 492357,
+    "f": 492357,
+    "usemtl": 639
+  },
+  "objMin": [
+    322011.14794921875,
+    5809308.971923828,
+    4.336561203003
+  ],
+  "objMax": [
+    322137.990234375,
+    5809589.971923828,
+    64.882369995117
+  ],
+  "attribution": "City of Melbourne, City of Melbourne 3D Textured Mesh (Photomesh) 2020, CC BY 4.0. Preview rebased and converted; original geometry and photographic textures retained.",
+  "assetUrl": "/surveys/au-1953/context.glb",
+  "format": "glTF 2.0 GLB",
+  "kind": "texturedMesh",
+  "origin": [
+    144.97036026712328,
+    -37.845938767123286
+  ],
+  "axes": "x east, y up, z south",
+  "units": "metres",
+  "altitudeOffsetMetres": 0,
+  "sourceCrs": "EPSG:7855 (GDA2020 / MGA zone 55), per official OBJ tile index",
+  "sourceCrsEvidenceUrl": "https://services1.arcgis.com/KGdHCCUjGBpOPPac/arcgis/rest/services/Photomesh_2020_OBJ_Grid/FeatureServer/0?f=json",
+  "projection": "x=(lon-originLon)*111320*cos(originLat); z=-(lat-originLat)*111320; y=AHD elevation",
+  "localBounds": {
+    "min": [
+      594.1592895891347,
+      4.336561203003,
+      -240.72708145319694
+    ],
+    "max": [
+      720.810120184048,
+      64.882369995117,
+      43.7913622087396
+    ]
+  },
+  "sourceVertexBounds": [
+    [
+      322011.14794921875,
+      5809308.971923828,
+      4.336561203003
+    ],
+    [
+      322137.990234375,
+      5809589.971923828,
+      64.882369995117
+    ]
+  ],
+  "triangles": 492357,
+  "outputVertices": 482045,
+  "drawCalls": 5,
+  "atlasSize": 4096,
+  "textureMaxDimension": 384,
+  "atlasCount": 5,
+  "textureJpegQuality": 84,
+  "textureJpegChromaSubsampling": "4:2:0",
+  "sourceNonfiniteUvCount": 48,
+  "maximumGeometryQuantizationErrorMetres": 0.0024135306865888796,
+  "assetBytes": 23748756,
+  "assetSha256": "53cb7f24715c23ed9b3023cf01b39aea4194870c6d3c1d604015a859e7d131a4",
+  "modifications": "Reprojected MGA55 to geographic then environment local frame; preserved all triangles; positions and UVs quantized to uint16; source NaN UVs assigned image centre; photographic textures downsampled to max 384px, atlased with gutters and JPEG reencoded; unlit photographic materials.",
+  "coverageNotice": "Nearby context sample only. E5-20 does not intersect the Albert Park racing line.",
+  "geometryPrecisionNote": "Submillimetre source slivers can collapse under uint16 position quantization; all source triangle entries are retained."
+}

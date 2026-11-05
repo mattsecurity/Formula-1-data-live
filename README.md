@@ -8,8 +8,8 @@ Una web app in stile Apple Pro (Liquid Glass, grafica da broadcast, tema scuro) 
 
 ### Replay della sessione
 - Mappa del circuito ricostruita dalla telemetria, con bordi pista, cordoli bianco-rossi nelle curve strette, corsia box, piazzole della griglia, linea del traguardo, settori S1/S2/S3, zone DRS con linea di attivazione, frecce del senso di marcia, scala in metri e curve numerate con il loro nome (es. Variante del Rettifilo, Eau Rouge, Copse, 130R).
-- **Vista 3D del circuito** (pulsante 2D/3D o tasto P): asfalto, cordoli, corsia box, zone DRS, linea del traguardo e dislivelli reali ricavati dall'altitudine della telemetria (accentuati per renderli visibili). Tre camere: **Orbita** (ruoti e zoomi liberamente), **Insegui** (dietro la monoposto selezionata o al leader) e **Dall'alto**. Clicca una monoposto per selezionarla.
-- **Circuito e monoposto realistici modellati in Blender**: per Monza la vista 3D carica il circuito vero, ricostruito da OpenStreetMap: asfalto con linee bianche, cordoli, vie di fuga in ghiaia, guard-rail e reti, corsia box con muretto, 42 tribune (con tetto e colonne sul rettilineo), edifici del paddock e del paese e oltre 7.000 alberi del Parco. Il modello si allinea da solo alla telemetria di ogni sessione e segue i dislivelli reali. Cielo, sole e ombre in tempo reale. Le monoposto sono un modello 3D in stile 2026 nei colori del team, con le ruote che girano. Sugli altri circuiti resta la pista generata dalla telemetria.
+- **Vista 3D del circuito** (pulsante 2D/3D o tasto P): asfalto, cordoli, corsia box, zone DRS, linea del traguardo e dislivelli ricavati dall'altitudine della telemetria in scala reale. Materiali PBR locali per asfalto, erba e sabbia, illuminazione solare e ombre. Il contesto geografico viene caricato dal pacchetto del circuito: edifici estrusi da sagome OpenStreetMap, parchi, boschi, strade e acqua. Le altezze mancanti, le facciate, gli alberi e il rilievo fuori pista sono ricostruzioni indicative, non fotogrammetria; le strutture temporanee possono mancare. Un controllo geometrico nasconde il contesto quando non è allineabile alla versione del tracciato della sessione. Tre camere: **Orbita** (ruoti e zoomi liberamente), **Insegui** (dietro la monoposto selezionata o al leader) e **Dall'alto**. Clicca una monoposto per selezionarla.
+- **Circuito e monoposto realistici modellati in Blender**: per Monza la vista 3D carica il circuito vero, ricostruito da OpenStreetMap: asfalto con linee bianche, cordoli, vie di fuga in ghiaia, guard-rail e reti, corsia box con muretto, 42 tribune (con tetto e colonne sul rettilineo), edifici del paddock e del paese e oltre 7.000 alberi del Parco. Il modello si allinea da solo alla telemetria di ogni sessione, segue i dislivelli reali e prende il posto del contesto geografico generico ("Solo autodromo" nasconde paese, parco e strade). Le monoposto sono un modello 3D in stile 2026 nei colori del team, con le ruote che girano. Sugli altri circuiti restano la pista generata dalla telemetria e il contesto geografico.
 - **Bandiere per settore**: quando la direzione gara espone la gialla o la doppia gialla, il settore di commissari interessato si illumina sulla mappa (2D e 3D) con una bandierina che sventola. Con la bandiera rossa si colora tutto il tracciato. In basso, accanto ai controlli, una bandiera animata mostra sempre la situazione in pista (verde, gialla, doppia gialla, rossa, SC, VSC, scacchi) con il settore e la curva più vicina.
 - **Mappa velocità**: colora il tracciato in base alla velocità del giro di riferimento.
 - Quando zoomi, le monoposto diventano sagome viste dall'alto orientate nel senso di marcia. Le etichette mostrano posizione e sigla, come in TV.
@@ -104,3 +104,49 @@ Ogni campione di posizione viene proiettato sul tracciato di riferimento, ricost
 - Tracciati: [bacinger/f1-circuits](https://github.com/bacinger/f1-circuits) di Tomislav Bacinger (MIT).
 - Modello 3D di Monza: dati © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL).
 - Progetto non ufficiale e senza scopo di lucro. Formula 1, F1 e i marchi correlati appartengono ai rispettivi proprietari.
+
+### Ambienti geografici 3D
+
+**Stato del realismo:** i 25 ambienti OSM inclusi sono schemi geografici 3D, non
+rilievi fotogrammetrici e non soddisfano da soli una resa fotografica da elicottero.
+L'esploratore include ora due rilievi reali locali: **Interlagos**, con circa
+966 mila punti LiDAR colorati che coprono circuito e dintorni (GeoSampa,
+CC BY-SA 4.0), e **Melbourne**, con un tassello fotogrammetrico di edifici a est
+di Albert Park (City of Melbourne, CC BY 4.0). Il tassello di Melbourne **non
+comprende la pista**; Interlagos è una nuvola di punti, non una superficie
+fotografica continua. «Inquadra rilievo» mostra la copertura effettiva, con
+orbita e zoom. La modalità «Mappa OSM» conserva la vista indicativa del circuito.
+
+Zandvoort, Barcellona, Imola, Madrid e Red Bull Ring hanno fotografie aeree
+ufficiali del terreno. Gli edifici sovrapposti rimangono indicativi. I nuovi
+asset sono nell'esploratore `/circuit/:id`; il replay con le monoposto non usa
+ancora questi rilievi, perché le quote richiedono una calibrazione separata.
+Il caricatore per 3D Tiles autorizzati resta disponibile e
+`public/scenery-sources.json` non contiene servizi remoti. Vedi
+[asset e riproducibilità](public/surveys/README.md) e
+[fonti e limiti del fotorealismo](docs/PHOTOREALISTIC-SOURCES.md).
+
+Dalla home o dal weekend, «Esplora i circuiti in 3D» apre un visualizzatore senza
+telemetria, con selezione di tutti i circuiti riconosciuti. «Ambiente completo»
+mostra il contesto; «Solo autodromo» mantiene il tracciato e le strutture
+circuitali identificate nei dati, comprese le barriere mappate.
+
+I pacchetti `public/environments/<circuitId>.json` sono caricati solo quando si apre
+la vista 3D. Le API OSM e Poly Haven non vengono chiamate durante il replay.
+I dati geografici sono © OpenStreetMap contributors, ODbL 1.0; le texture sono CC0.
+Il pannello «Ambiente 3D» mostra copertura e altezze stimate.
+
+Rigenerazione dati (richiede Python 3, curl e accesso Internet):
+```bash
+python scripts/fetch-environments.py
+python scripts/fetch-textures.py
+```
+
+Nei replay con quote di telemetria, il terreno fuori pista usa le griglie
+altimetriche Tilezen/Mapzen disponibili, raccordate alle quote della pista. Nei
+circuiti cittadini e nelle anteprime senza telemetria resta indicativo: i DEM
+possono contenere tetti e batimetria e non sono rilievi della pista attuale.
+Fonti e limiti: [dati altimetrici](public/terrain/README.md). Le larghezze della pista restano indicative.
+Edifici e paesaggio rappresentano lo stato della mappa al download, non
+necessariamente quello dell'anno della gara. Per dettagli e licenze delle texture:
+[fonti degli asset](docs/SCENERY-SOURCES.md).
