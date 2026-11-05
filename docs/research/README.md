@@ -1,5 +1,11 @@
 # Circuit photographic asset search — 5 November 2026
 
+Subsequent implementation now ships the open Melbourne sample and the full
+Interlagos point-cloud extract in the explorer, plus five photographic ground
+layers. See [implemented assets](../../public/surveys/README.md). The table below
+retains the acquisition findings; paid sources remain unpurchased and remote
+photogrammetry services remain unconfigured.
+
 This is an acquisition and coverage audit for **all 25 circuit locations in the
 project**. It does not claim that the application now contains these scenes.
 The current `public/scenery-sources.json` remains empty; catalogue candidates

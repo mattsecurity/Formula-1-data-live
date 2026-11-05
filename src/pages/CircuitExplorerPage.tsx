@@ -9,6 +9,9 @@ import { buildEnvironment, makeLandscape, surfaceMaterial, terrainSampler, type 
 import { loadPhotogrammetrySource } from '../data/scenerySources';
 import { photogrammetryPlacement } from '../replay/photogrammetryPlacement';
 import type { createPhotogrammetry } from '../replay/photogrammetry3d';
+import { surveySource } from '../data/surveySources';
+import { loadSurvey } from '../replay/survey3d';
+import { createOrthophoto } from '../replay/orthophoto3d';
 import './circuit-explorer.css';
 
 const MAPPED_CIRCUITS = CIRCUITS.filter(circuit => findCircuit(circuit.name, circuit.location)?.id === circuit.id)
@@ -20,6 +23,14 @@ export default function CircuitExplorerPage() {
   const navigate = useNavigate();
   const circuit = circuitById(id);
   const supported = circuit && MAPPED_CIRCUITS.some(item => item.id === id) ? circuit : undefined;
+  const localSource = supported ? surveySource(supported.id) : undefined;
+  const [layer, setLayer] = useState<'map' | 'survey'>('map');
+  const [surveyStatus, setSurveyStatus] = useState('');
+  const [surveyReady, setSurveyReady] = useState(false);
+  const [aerialInfo, setAerialInfo] = useState<{ attribution: string; description: string; sourceUrl: string; licenseUrl: string; capture: string } | null>(null);
+  const layerRef = useRef(layer);
+  layerRef.current = layer;
+  const surveyFrameRef = useRef<(() => void) | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const [webgl, setWebgl] = useState(true);
   const [mode, setMode] = useState<CameraMode>('orbit');
@@ -44,8 +55,16 @@ export default function CircuitExplorerPage() {
     const abort = new AbortController();
     let disposed = false;
     let raf = 0;
+    let survey: Awaited<ReturnType<typeof loadSurvey>> | null = null;
+    let orthophoto: Awaited<ReturnType<typeof createOrthophoto>> = null;
     let photogrammetry: ReturnType<typeof createPhotogrammetry> | null = null;
     let renderer: THREE.WebGLRenderer;
+    const source = surveySource(supported.id);
+    setLayer(source ? 'survey' : 'map');
+    layerRef.current = source ? 'survey' : 'map';
+    setSurveyReady(false);
+    setSurveyStatus(source ? 'Caricamento del rilievo reale…' : '');
+    setAerialInfo(null);
     setStatus('Caricamento del contesto geografico…');
     setPhotoStatus('Rilievo fotografico 3D non configurato');
     setPhotoCredits([]);
@@ -82,7 +101,8 @@ export default function CircuitExplorerPage() {
     const scene = new THREE.Scene();
     const sky = 0xb7ccd9;
     scene.background = new THREE.Color(sky);
-    scene.fog = new THREE.Fog(sky, extent * 3, extent * 9);
+    const mapFog = new THREE.Fog(sky, extent * 3, extent * 9);
+    scene.fog = mapFog;
     scene.add(new THREE.HemisphereLight(0xcfe7ff, 0x6c7655, 1.5));
     const sun = new THREE.DirectionalLight(0xffecd1, 2.6);
     sun.position.set(extent * 0.4, extent, extent * 0.3);
@@ -104,7 +124,21 @@ export default function CircuitExplorerPage() {
     controls.maxPolarAngle = Math.PI * 0.48;
     controls.zoomToCursor = true;
     controls.screenSpacePanning = false;
+    const frameSurvey = (preset: CameraMode) => {
+      if (!survey) return;
+      const sphere = survey.bounds.getBoundingSphere(new THREE.Sphere());
+      const distance = Math.max(40, sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * Math.max(1, 1 / camera.aspect) * 1.1);
+      const direction = preset === 'top' ? new THREE.Vector3(0, 1, 0.001) : new THREE.Vector3(1, 1.15, 1).normalize();
+      controls.target.copy(sphere.center);
+      camera.position.copy(sphere.center).addScaledVector(direction, distance);
+      controls.maxDistance = Math.max(extent * 7, distance * 3);
+      camera.far = Math.max(extent * 20, distance * 6);
+      camera.updateProjectionMatrix();
+      controls.update();
+    };
+    surveyFrameRef.current = () => frameSurvey(modeRef.current);
     const frame = (preset: CameraMode) => {
+      if (layerRef.current === 'survey' && survey) { frameSurvey(preset); return; }
       const portrait = camera.aspect < 1;
       const angle = -ref.rotation * Math.PI / 180 + (portrait ? Math.PI / 2 : 0);
       const distance = extent / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * Math.max(1, 0.8 / camera.aspect) * 1.1;
@@ -134,6 +168,9 @@ export default function CircuitExplorerPage() {
     landscape.textures.forEach(texture => textures.add(texture));
     scene.add(landscape.mesh);
     let environmentGroup: THREE.Group | null = null;
+    const schematicTrack = new THREE.Group();
+    schematicTrack.name = 'Indicative track and kerbs';
+    scene.add(schematicTrack);
 
     const ribbon = (offset0: number, offset1: number, lift = 0) => {
       const positions: number[] = [], uv: number[] = [], indices: number[] = [];
@@ -159,7 +196,7 @@ export default function CircuitExplorerPage() {
     asphalt.textures.forEach(texture => textures.add(texture));
     const road = new THREE.Mesh(ribbon(7, -7), asphalt.material);
     road.receiveShadow = true;
-    scene.add(road);
+    schematicTrack.add(road);
     const vergeAsset = ['bh-2002', 'sa-2021', 'qa-2004', 'ae-2009'].includes(supported.id)
       ? 'aerial_beach_01' : ['sg-2008', 'mc-1929', 'az-2016', 'us-2023'].includes(supported.id) ? 'asphalt_02' : 'aerial_grass_rock';
     const verge = surfaceMaterial(vergeAsset, vergeAsset === 'asphalt_02' ? 3 : 12, renderer, vergeAsset === 'aerial_grass_rock' ? 0x548b61 : 0xffffff);
@@ -167,9 +204,9 @@ export default function CircuitExplorerPage() {
     for (const side of [-1, 1]) {
       const edge = new THREE.Mesh(ribbon(side * 7, side * 11, -0.08), verge.material);
       edge.receiveShadow = true;
-      scene.add(edge);
+      schematicTrack.add(edge);
       const line = new THREE.Mesh(ribbon(side * 6.7, side * 6.55, 0.035), new THREE.MeshStandardMaterial({ color: 0xf4f3e9, roughness: 0.75, side: THREE.DoubleSide }));
-      scene.add(line);
+      schematicTrack.add(line);
     }
     // Kerbs follow estimated curvature; they are visual aids, not surveyed geometry.
     const kerbPositions: number[] = [], kerbColors: number[] = [];
@@ -188,7 +225,7 @@ export default function CircuitExplorerPage() {
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(kerbPositions, 3));
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(kerbColors, 3));
       geometry.computeVertexNormals();
-      scene.add(new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, side: THREE.DoubleSide })));
+      schematicTrack.add(new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, side: THREE.DoubleSide })));
     }
 
     fetch(`${import.meta.env.BASE_URL}environments/${supported.id}.json`, { signal: abort.signal })
@@ -197,10 +234,42 @@ export default function CircuitExplorerPage() {
         if (disposed) return;
         if (data.version !== 1 || data.circuitId !== supported.id) throw new Error('invalid');
         const built = buildEnvironment(data, ref, cx, cy, heightAt);
-        if (!built.group) { setStatus('Contesto non allineato a questa versione del tracciato'); return; }
+        if (!built.group) {
+          setStatus('Contesto non allineato a questa versione del tracciato');
+          if (source) { setSurveyStatus('Rilievo non allineabile a questo tracciato'); setLayer('map'); layerRef.current = 'map'; }
+          return;
+        }
         environmentGroup = built.group;
         scene.add(built.group);
         setStatus(`Mappa OSM · ${built.buildings.toLocaleString('it-IT')} edifici · ${built.estimated.toLocaleString('it-IT')} altezze stimate`);
+        const placement = photogrammetryPlacement(data.outline, ref, cx, cy);
+        if (placement) {
+          createOrthophoto({ id: supported.id, origin: data.origin, placement, renderer, signal: abort.signal }).then(result => {
+            if (!result) return;
+            if (disposed) { result.dispose(); return; }
+            orthophoto = result;
+            scene.add(result.group);
+            setAerialInfo({ attribution: result.attribution, description: result.description, sourceUrl: result.source.sourceUrl, licenseUrl: result.source.licenseUrl, capture: result.source.capture });
+          }).catch(() => { /* Keep the geographic fallback if the optional photograph fails. */ });
+          if (source) loadSurvey({ source, environmentOrigin: data.origin, placement, signal: abort.signal }).then(result => {
+            if (disposed) { result.dispose(); return; }
+            survey = result;
+            scene.add(result.group);
+            setSurveyReady(true);
+            setSurveyStatus(source.label);
+            if (layerRef.current === 'survey') frameSurvey(modeRef.current);
+          }).catch(() => {
+            if (disposed) return;
+            setSurveyStatus('Rilievo non disponibile · mappa geografica mostrata');
+            setLayer('map');
+            layerRef.current = 'map';
+            frame(modeRef.current);
+          });
+        } else if (source) {
+          setSurveyStatus('Rilievo non allineabile a questo tracciato');
+          setLayer('map');
+          layerRef.current = 'map';
+        }
         loadPhotogrammetrySource(supported.id, abort.signal).then(async source => {
           if (disposed || !source) return;
           const placement = photogrammetryPlacement(data.outline, ref, cx, cy);
@@ -216,15 +285,31 @@ export default function CircuitExplorerPage() {
         }).catch(() => { if(!disposed)setPhotoStatus('Rilievo fotografico non disponibile'); });
 
       })
-      .catch(() => { if (!disposed) setStatus('Contesto geografico non disponibile · solo tracciato e terreno indicativo'); });
+      .catch(() => { if (!disposed) {
+        setStatus('Contesto geografico non disponibile · solo tracciato e terreno indicativo');
+        if (source) { setSurveyStatus('Rilievo non disponibile · riferimento geografico mancante'); setLayer('map'); layerRef.current = 'map'; }
+      } });
     const onContextLost = (event: Event) => { event.preventDefault(); cancelAnimationFrame(raf); setWebgl(false); };
     renderer.domElement.addEventListener('webglcontextlost', onContextLost);
     const render = () => {
       if (disposed) return;
-      landscape.mesh.visible = surroundingsRef.current && !photogrammetry;
-      environmentGroup?.children.forEach(child => { child.visible = !photogrammetry && (surroundingsRef.current || Boolean(child.userData.circuitDetail)) || !surroundingsRef.current && Boolean(child.userData.circuitDetail); });
+      const showSurvey = layerRef.current === 'survey' && Boolean(survey);
+      // Survey bounds can extend well beyond the racing line, especially when
+      // framing a portrait viewport. Track-sized fog would hide the real data.
+      scene.fog = showSurvey ? null : mapFog;
+      const showRemote = !showSurvey && surroundingsRef.current && Boolean(photogrammetry);
+      const showAerial = !showSurvey && !showRemote && surroundingsRef.current && Boolean(orthophoto);
+      landscape.mesh.visible = !showSurvey && !showRemote && !showAerial && surroundingsRef.current;
+      schematicTrack.visible = !showSurvey && !showRemote && (!showAerial || orthophoto?.source.showTrackOverlay === true);
+      schematicTrack.position.y = showAerial ? 0.2 : 0;
+      if (survey) survey.group.visible = showSurvey;
+      if (orthophoto) orthophoto.group.visible = showAerial;
+      environmentGroup?.children.forEach(child => {
+        child.visible = !showSurvey && !showRemote && (surroundingsRef.current || Boolean(child.userData.circuitDetail))
+          && !(showAerial && child.userData.environmentSurface);
+      });
       controls.update();
-      if (photogrammetry) { photogrammetry.group.visible = surroundingsRef.current; if(surroundingsRef.current)photogrammetry.update(); }
+      if (photogrammetry) { photogrammetry.group.visible = showRemote; if (showRemote) photogrammetry.update(); }
       renderer.render(scene, camera);
       raf = requestAnimationFrame(render);
     };
@@ -235,6 +320,9 @@ export default function CircuitExplorerPage() {
       abort.abort();
       cancelAnimationFrame(raf);
       observer.disconnect();
+      if (survey) survey.dispose();
+      if (orthophoto) { scene.remove(orthophoto.group); orthophoto.dispose(); }
+      surveyFrameRef.current = null;
       if(photogrammetry){scene.remove(photogrammetry.group);photogrammetry.dispose();}
       frameRef.current = null;
       controls.removeEventListener('start', onStart);
@@ -261,7 +349,7 @@ export default function CircuitExplorerPage() {
   }, [supported]);
 
   return (
-    <main className="circuit-explorer">
+    <main className={`circuit-explorer${localSource ? ' ce-has-survey' : ''}`}>
       <div className="ce-host" ref={hostRef} />
       <div className="ce-shade" aria-hidden="true" />
       <header className="ce-header">
@@ -276,31 +364,40 @@ export default function CircuitExplorerPage() {
       {supported ? <>
         <section className="ce-heading">
           <div className="ce-eyebrow">Circuit Explorer <span>3D</span></div>
-          <p className="ce-photo-status">{photoStatus}</p>
+          <p className="ce-photo-status" aria-live="polite">{localSource && !surveyReady ? surveyStatus : layer === 'survey' ? surveyStatus : aerialInfo && surroundings ? `Foto aerea ${aerialInfo.capture} · edifici indicativi` : localSource ? 'Mappa geografica · edifici indicativi' : photoStatus}</p>
           <h1>{supported.name}</h1>
           <p>{supported.location}<span>·</span>{(supported.length / 1000).toFixed(3)} km<span>·</span>{MAPPED_CIRCUITS.length} circuiti da esplorare</p>
         </section>
         {!webgl && <div className="ce-error" role="alert"><h2>Vista 3D non disponibile</h2><p>Il browser non ha accesso a WebGL. Prova a ricaricare la pagina con l’accelerazione grafica attiva.</p><Link to="/season">Torna al calendario</Link></div>}
         <div className="ce-toolbar">
-          <div className="ce-segment" role="group" aria-label="Contesto geografico">
+          {localSource && <div className="ce-segment" role="group" aria-label="Tipo di dati">
+            <button aria-pressed={layer === 'survey'} disabled={!surveyReady} onClick={() => { setLayer('survey'); layerRef.current = 'survey'; surveyFrameRef.current?.(); }}>{localSource.kind === 'photomesh' ? 'Rilievo fotografico' : 'LiDAR a colori'}</button>
+            <button aria-pressed={layer === 'map'} onClick={() => { setLayer('map'); layerRef.current = 'map'; frameRef.current?.(mode); }}>Mappa OSM</button>
+          </div>}
+          {layer === 'map' && <div className="ce-segment" role="group" aria-label="Contesto geografico">
             <button aria-pressed={surroundings} onClick={() => setSurroundings(true)}>Ambiente completo</button>
             <button aria-pressed={!surroundings} onClick={() => setSurroundings(false)}>Solo autodromo</button>
-          </div>
+          </div>}
           <div className="ce-segment" role="group" aria-label="Inquadratura">
             <button aria-pressed={mode === 'orbit'} onClick={() => { setMode('orbit'); frameRef.current?.('orbit'); }}>Orbita</button>
             <button aria-pressed={mode === 'top'} onClick={() => { setMode('top'); frameRef.current?.('top'); }}>Dall’alto</button>
             <button onClick={() => frameRef.current?.(mode)} aria-label="Ricomponi l’inquadratura">↺</button>
+            {layer === 'survey' && <button disabled={!surveyReady} onClick={() => surveyFrameRef.current?.()}>Inquadra rilievo</button>}
           </div>
         </div>
-        {photoCredits.length>0 && <div className="ce-photo-credits">{photoCredits.join(' · ')}</div>}
+        {(layer === 'survey' && localSource || layer === 'map' && (aerialInfo || photoCredits.length > 0)) && <div className="ce-photo-credits">
+          {layer === 'survey' && localSource ? `${localSource.attribution} · ${localSource.license}` : aerialInfo ? aerialInfo.attribution : photoCredits.join(' · ')}
+        </div>}
         <details className="ce-sources">
           <summary><span className="ce-source-dot" />Fonti e dettagli del contesto</summary>
+          {localSource && <><p className="ce-status">{surveyStatus}</p><p>{localSource.description}</p><div className="ce-source-links"><a href={localSource.sourceUrl} target="_blank" rel="noreferrer">{localSource.attribution}</a><a href={localSource.licenseUrl} target="_blank" rel="noreferrer">{localSource.license}</a></div></>}
+          {aerialInfo && <><p>{aerialInfo.description}</p><div className="ce-source-links"><a href={aerialInfo.sourceUrl} target="_blank" rel="noreferrer">{aerialInfo.attribution}</a><a href={aerialInfo.licenseUrl} target="_blank" rel="noreferrer">Licenza della fotografia</a></div></>}
           <p className="ce-status" aria-live="polite">{status}</p>
           <p>Edifici, strade, acqua e aree verdi seguono i dati geografici OpenStreetMap. Facciate, alberi e altezze mancanti sono ricostruzioni indicative; le strutture temporanee possono mancare.</p>
           <p>Tracciato geografico, larghezza rappresentata di 14 m e cordoli indicativi. Terreno piano in assenza di dati altimetrici; nessuna telemetria necessaria.</p>
           <div className="ce-source-links"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap · ODbL</a><a href="https://github.com/bacinger/f1-circuits" target="_blank" rel="noreferrer">Tracciati · MIT</a><a href="https://polyhaven.com" target="_blank" rel="noreferrer">Texture · Poly Haven CC0</a></div>
         </details>
-        <p className="ce-hint">Trascina per ruotare · Scorri per avvicinarti · Tasto destro per spostarti</p>
+        <p className="ce-hint">Trascina per ruotare · Pizzica per zoomare · Due dita o tasto destro per spostarti</p>
       </> : <div className="ce-error"><h1>Circuito non disponibile</h1><p>Scegli uno dei {MAPPED_CIRCUITS.length} circuiti nel menu per esplorare il suo ambiente.</p><Link to="/circuit/it-1922">Esplora Monza</Link></div>}
     </main>
   );

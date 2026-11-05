@@ -1,0 +1,844 @@
+{
+  "version": 1,
+  "circuitId": "br-1940",
+  "kind": "points",
+  "url": "survey.glb",
+  "label": "Interlagos — rilievo LiDAR RGB reale (2017)",
+  "pointCount": 965656,
+  "bytes": 15451364,
+  "sha256": "e50940b17e6193cb10e1fe9dedb8f57095e073369ce63298385cb80a48dcacbe",
+  "origin": [
+    -46.698041865497075,
+    -23.70095316374269
+  ],
+  "originElevation": 762.63,
+  "sourceCrs": "EPSG:31983",
+  "coordinateSystem": "local east/up/south metres",
+  "projection": {
+    "type": "local-equirectangular",
+    "eastMetresPerDegree": 101930.8155084292,
+    "northMetresPerDegree": 111320,
+    "formula": "x=(lon-originLon)*eastMetresPerDegree; y=height-originElevation; z=-(lat-originLat)*northMetresPerDegree"
+  },
+  "outline": [
+    [
+      -189.91,
+      -310.68
+    ],
+    [
+      -131.2,
+      -537.88
+    ],
+    [
+      -124.98,
+      -561.81
+    ],
+    [
+      -118.76,
+      -575.62
+    ],
+    [
+      -104.7,
+      -596.55
+    ],
+    [
+      -97.46,
+      -602.45
+    ],
+    [
+      -87.06,
+      -606.68
+    ],
+    [
+      -76.77,
+      -606.79
+    ],
+    [
+      -65.45,
+      -604.45
+    ],
+    [
+      -59.54,
+      -601.33
+    ],
+    [
+      -41.19,
+      -584.41
+    ],
+    [
+      -23.36,
+      -564.6
+    ],
+    [
+      -16.32,
+      -559.36
+    ],
+    [
+      -7.15,
+      -556.14
+    ],
+    [
+      2.13,
+      -555.58
+    ],
+    [
+      15.58,
+      -559.92
+    ],
+    [
+      44.12,
+      -577.4
+    ],
+    [
+      66.75,
+      -586.75
+    ],
+    [
+      83.57,
+      -591.09
+    ],
+    [
+      98.96,
+      -593.09
+    ],
+    [
+      113.03,
+      -593.87
+    ],
+    [
+      133.72,
+      -591.42
+    ],
+    [
+      149.52,
+      -587.97
+    ],
+    [
+      168.99,
+      -580.96
+    ],
+    [
+      187.23,
+      -570.39
+    ],
+    [
+      205.27,
+      -556.25
+    ],
+    [
+      219.85,
+      -540.89
+    ],
+    [
+      231.37,
+      -524.52
+    ],
+    [
+      239.93,
+      -509.16
+    ],
+    [
+      247.07,
+      -491.9
+    ],
+    [
+      275.0,
+      -399.62
+    ],
+    [
+      286.82,
+      -353.31
+    ],
+    [
+      307.0,
+      -274.72
+    ],
+    [
+      331.67,
+      -174.31
+    ],
+    [
+      374.99,
+      -9.78
+    ],
+    [
+      390.59,
+      49.56
+    ],
+    [
+      401.59,
+      91.19
+    ],
+    [
+      406.69,
+      110.56
+    ],
+    [
+      408.63,
+      122.8
+    ],
+    [
+      407.4,
+      134.27
+    ],
+    [
+      404.55,
+      142.06
+    ],
+    [
+      398.33,
+      151.3
+    ],
+    [
+      387.12,
+      159.09
+    ],
+    [
+      374.07,
+      164.55
+    ],
+    [
+      355.22,
+      168.45
+    ],
+    [
+      298.85,
+      179.58
+    ],
+    [
+      276.83,
+      182.03
+    ],
+    [
+      263.17,
+      181.02
+    ],
+    [
+      246.46,
+      178.69
+    ],
+    [
+      230.66,
+      174.01
+    ],
+    [
+      216.69,
+      165.77
+    ],
+    [
+      203.44,
+      157.98
+    ],
+    [
+      190.19,
+      147.07
+    ],
+    [
+      177.45,
+      132.93
+    ],
+    [
+      160.02,
+      110.78
+    ],
+    [
+      102.73,
+      33.41
+    ],
+    [
+      69.1,
+      -14.23
+    ],
+    [
+      40.45,
+      -54.97
+    ],
+    [
+      9.06,
+      -96.16
+    ],
+    [
+      -7.45,
+      -119.09
+    ],
+    [
+      -20.2,
+      -136.35
+    ],
+    [
+      -29.06,
+      -146.14
+    ],
+    [
+      -38.95,
+      -152.27
+    ],
+    [
+      -53.02,
+      -157.28
+    ],
+    [
+      -68.51,
+      -159.28
+    ],
+    [
+      -91.75,
+      -158.72
+    ],
+    [
+      -107.24,
+      -156.16
+    ],
+    [
+      -119.58,
+      -152.27
+    ],
+    [
+      -130.59,
+      -147.26
+    ],
+    [
+      -149.44,
+      -137.02
+    ],
+    [
+      -158.82,
+      -128.67
+    ],
+    [
+      -165.04,
+      -120.43
+    ],
+    [
+      -171.05,
+      -108.52
+    ],
+    [
+      -175.64,
+      -92.38
+    ],
+    [
+      -181.35,
+      -68.55
+    ],
+    [
+      -186.04,
+      -46.74
+    ],
+    [
+      -192.36,
+      -6.66
+    ],
+    [
+      -193.58,
+      9.93
+    ],
+    [
+      -193.27,
+      26.74
+    ],
+    [
+      -189.3,
+      39.54
+    ],
+    [
+      -182.88,
+      45.99
+    ],
+    [
+      -178.39,
+      48.33
+    ],
+    [
+      -172.79,
+      50.22
+    ],
+    [
+      -165.14,
+      51.11
+    ],
+    [
+      -157.09,
+      49.11
+    ],
+    [
+      -148.63,
+      45.77
+    ],
+    [
+      -125.8,
+      28.4
+    ],
+    [
+      -116.62,
+      22.95
+    ],
+    [
+      -109.49,
+      19.94
+    ],
+    [
+      -101.84,
+      18.39
+    ],
+    [
+      -94.81,
+      17.83
+    ],
+    [
+      -87.06,
+      18.83
+    ],
+    [
+      -76.46,
+      22.73
+    ],
+    [
+      -63.92,
+      33.08
+    ],
+    [
+      -56.89,
+      43.54
+    ],
+    [
+      -53.12,
+      55.01
+    ],
+    [
+      -52.51,
+      64.81
+    ],
+    [
+      -54.04,
+      76.16
+    ],
+    [
+      -58.32,
+      85.07
+    ],
+    [
+      -68.1,
+      99.43
+    ],
+    [
+      -76.97,
+      108.33
+    ],
+    [
+      -108.26,
+      138.95
+    ],
+    [
+      -124.37,
+      157.42
+    ],
+    [
+      -135.48,
+      173.9
+    ],
+    [
+      -143.53,
+      195.94
+    ],
+    [
+      -149.75,
+      223.33
+    ],
+    [
+      -152.6,
+      239.91
+    ],
+    [
+      -154.13,
+      254.83
+    ],
+    [
+      -153.11,
+      267.07
+    ],
+    [
+      -148.32,
+      275.42
+    ],
+    [
+      -144.35,
+      280.43
+    ],
+    [
+      -137.93,
+      282.55
+    ],
+    [
+      -132.63,
+      283.88
+    ],
+    [
+      -125.8,
+      282.77
+    ],
+    [
+      -117.85,
+      279.54
+    ],
+    [
+      -79.62,
+      236.02
+    ],
+    [
+      -46.6,
+      199.5
+    ],
+    [
+      -40.89,
+      194.83
+    ],
+    [
+      -28.55,
+      186.26
+    ],
+    [
+      -17.24,
+      181.25
+    ],
+    [
+      -7.86,
+      178.46
+    ],
+    [
+      3.66,
+      176.57
+    ],
+    [
+      14.36,
+      175.35
+    ],
+    [
+      26.69,
+      175.24
+    ],
+    [
+      46.06,
+      178.02
+    ],
+    [
+      60.84,
+      182.81
+    ],
+    [
+      76.54,
+      191.82
+    ],
+    [
+      92.44,
+      204.74
+    ],
+    [
+      101.31,
+      216.42
+    ],
+    [
+      110.79,
+      229.56
+    ],
+    [
+      136.17,
+      269.52
+    ],
+    [
+      164.2,
+      316.5
+    ],
+    [
+      195.9,
+      367.82
+    ],
+    [
+      197.94,
+      373.83
+    ],
+    [
+      198.45,
+      380.96
+    ],
+    [
+      196.51,
+      387.97
+    ],
+    [
+      192.84,
+      395.54
+    ],
+    [
+      185.81,
+      402.11
+    ],
+    [
+      169.19,
+      410.79
+    ],
+    [
+      145.03,
+      419.58
+    ],
+    [
+      96.01,
+      438.06
+    ],
+    [
+      86.42,
+      440.62
+    ],
+    [
+      74.19,
+      442.52
+    ],
+    [
+      49.52,
+      439.84
+    ],
+    [
+      27.92,
+      436.17
+    ],
+    [
+      -19.38,
+      426.04
+    ],
+    [
+      -35.08,
+      420.7
+    ],
+    [
+      -66.27,
+      407.67
+    ],
+    [
+      -81.66,
+      400.88
+    ],
+    [
+      -118.36,
+      381.07
+    ],
+    [
+      -132.93,
+      371.16
+    ],
+    [
+      -145.37,
+      360.03
+    ],
+    [
+      -158.01,
+      348.34
+    ],
+    [
+      -168.3,
+      336.2
+    ],
+    [
+      -177.48,
+      321.96
+    ],
+    [
+      -185.83,
+      303.81
+    ],
+    [
+      -192.56,
+      284.44
+    ],
+    [
+      -203.16,
+      244.92
+    ],
+    [
+      -214.68,
+      195.16
+    ],
+    [
+      -222.32,
+      148.3
+    ],
+    [
+      -235.47,
+      98.31
+    ],
+    [
+      -243.93,
+      60.69
+    ],
+    [
+      -251.27,
+      34.64
+    ],
+    [
+      -253.72,
+      15.71
+    ],
+    [
+      -254.23,
+      -10.0
+    ],
+    [
+      -252.8,
+      -40.5
+    ],
+    [
+      -249.44,
+      -63.32
+    ],
+    [
+      -243.73,
+      -89.93
+    ],
+    [
+      -233.84,
+      -128.22
+    ],
+    [
+      -205.0,
+      -249.56
+    ],
+    [
+      -189.91,
+      -310.68
+    ]
+  ],
+  "bounds": {
+    "min": [
+      -404.2299499511719,
+      -32.71002197265625,
+      -592.5199584960938
+    ],
+    "max": [
+      558.6295776367188,
+      97.21002197265625,
+      756.7899780273438
+    ]
+  },
+  "source": "https://download.geosampa.prefeitura.sp.gov.br/",
+  "attribution": "Prefeitura do Município de São Paulo / GeoSampa",
+  "license": "CC-BY-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "licenseEvidence": "Official portal rel=license links, download-layers panel and divLicenceccbysa footer; LAZ header carries no embedded license.",
+  "acquisitionYear": 2017,
+  "acquisitionDate": null,
+  "dateNote": "Official source grouping MDS 2017; exact flight date unverified. LAS creation2018 and S3 upload2020 are not capture dates.",
+  "processing": {
+    "cropBufferMetres": 150,
+    "horizontalVoxelMetres": 1.75,
+    "verticalVoxelMetres": 1.0,
+    "absoluteHeightRangeMetres": [
+      700,
+      900
+    ],
+    "classifications": [
+      2,
+      5,
+      6,
+      19,
+      20
+    ],
+    "sampling": "First measured point per spatial voxel; deterministic tile and point order, no generated geometry.",
+    "color": "Source RGB16 / 256 to sRGB8 (250000-point source sample has all RGB low bytes zero), converted to linear RGBA8 for glTF COLOR_0.",
+    "sourceStatistics": [
+      {
+        "tile": "3333-424",
+        "sourcePoints": 4930689,
+        "insideBounds": 1669442,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 201746
+      },
+      {
+        "tile": "3333-433",
+        "sourcePoints": 5059789,
+        "insideBounds": 2172012,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 177439
+      },
+      {
+        "tile": "3333-434",
+        "sourcePoints": 5954817,
+        "insideBounds": 90624,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 7098
+      },
+      {
+        "tile": "3333-452",
+        "sourcePoints": 4931918,
+        "insideBounds": 3701877,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 354004
+      },
+      {
+        "tile": "3333-454",
+        "sourcePoints": 5037768,
+        "insideBounds": 3389409,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 381032
+      },
+      {
+        "tile": "3333-461",
+        "sourcePoints": 5348333,
+        "insideBounds": 5348333,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 478651
+      },
+      {
+        "tile": "3333-462",
+        "sourcePoints": 6805131,
+        "insideBounds": 216294,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 18262
+      },
+      {
+        "tile": "3333-463",
+        "sourcePoints": 5481878,
+        "insideBounds": 4820672,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 415029
+      },
+      {
+        "tile": "3333-464",
+        "sourcePoints": 7199584,
+        "insideBounds": 194773,
+        "heightRejected": 0,
+        "unclassifiedRejected": 0,
+        "retainedBeforeGlobalDedup": 16405
+      }
+    ]
+  },
+  "coverage": {
+    "groundOnlyNearestDistanceMetres": {
+      "median": 1.6293539821378302,
+      "p95": 3.895982408684097,
+      "maximum": 9.564539137637238,
+      "within5MetresFraction": 0.9934944237918215
+    },
+    "retainedGroundPoints": 115206,
+    "sampleIntervalMetres": 2,
+    "samples": 2152,
+    "nearestPointDistanceMetres": {
+      "median": 0.6349868837810217,
+      "p95": 1.2355551613181337,
+      "maximum": 1.9022458449097488
+    },
+    "within5MetresFraction": 1.0
+  },
+  "limitations": [
+    "Point cloud, not a photographic surface mesh.",
+    "2017 survey may differ from current buildings, vegetation, and temporary race facilities.",
+    "Nadir survey has occlusion gaps on facades and under roofs; no invented surfaces.",
+    "Absolute survey heights use source datum; apply no unrecorded vertical exaggeration."
+  ]
+}

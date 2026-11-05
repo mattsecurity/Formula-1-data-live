@@ -96,9 +96,22 @@ Ogni campione di posizione viene proiettato sul tracciato di riferimento, ricost
 
 **Stato del realismo:** i 25 ambienti OSM inclusi sono schemi geografici 3D, non
 rilievi fotogrammetrici e non soddisfano da soli una resa fotografica da elicottero.
-Il caricatore Three.js per sorgenti 3D Tiles autorizzate è predisposto, ma
-`public/scenery-sources.json` non contiene dataset: nessuna città fotogrammetrica
-è inclusa o dichiarata disponibile. Vedi [fonti e limiti del fotorealismo](docs/PHOTOREALISTIC-SOURCES.md).
+L'esploratore include ora due rilievi reali locali: **Interlagos**, con circa
+966 mila punti LiDAR colorati che coprono circuito e dintorni (GeoSampa,
+CC BY-SA 4.0), e **Melbourne**, con un tassello fotogrammetrico di edifici a est
+di Albert Park (City of Melbourne, CC BY 4.0). Il tassello di Melbourne **non
+comprende la pista**; Interlagos è una nuvola di punti, non una superficie
+fotografica continua. «Inquadra rilievo» mostra la copertura effettiva, con
+orbita e zoom. La modalità «Mappa OSM» conserva la vista indicativa del circuito.
+
+Zandvoort, Barcellona, Imola, Madrid e Red Bull Ring hanno fotografie aeree
+ufficiali del terreno. Gli edifici sovrapposti rimangono indicativi. I nuovi
+asset sono nell'esploratore `/circuit/:id`; il replay con le monoposto non usa
+ancora questi rilievi, perché le quote richiedono una calibrazione separata.
+Il caricatore per 3D Tiles autorizzati resta disponibile e
+`public/scenery-sources.json` non contiene servizi remoti. Vedi
+[asset e riproducibilità](public/surveys/README.md) e
+[fonti e limiti del fotorealismo](docs/PHOTOREALISTIC-SOURCES.md).
 
 Dalla home o dal weekend, «Esplora i circuiti in 3D» apre un visualizzatore senza
 telemetria, con selezione di tutti i circuiti riconosciuti. «Ambiente completo»

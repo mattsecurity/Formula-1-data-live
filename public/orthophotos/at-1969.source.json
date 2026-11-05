@@ -1,0 +1,54 @@
+{
+  "url": "orthophotos/at-1969.jpg",
+  "bbox3857": [
+    1641457.7128671184,
+    5976982.677802255,
+    1645218.6535244659,
+    5980062.851176433
+  ],
+  "attribution": "Datenquelle: basemap.at (CC BY 4.0)",
+  "attributionUrl": "https://basemap.at/",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "sourceUrl": "https://mapsneu.wien.gv.at/basemap/1.0.0/WMTSCapabilities.xml",
+  "capture": "2022 labels embedded in source imagery. Regional flight metadata at circuit centre: 2022-07-20 (2022260_Zeltweg); exact mosaic-wide acquisition dates are not separately verified.",
+  "description": "Actual aerial orthophotography of the complete Red Bull Ring environment extent; 2D photographed ground, not a photographic 3D mesh. Provider year labels retained. Product-wide source maximum pixel size 29 cm (15 cm in selected regions); this bounded replay texture is sampled at WMTS zoom 17.",
+  "retrievedAt": "2026-11-05T05:57:47.658737+00:00",
+  "width": 3149,
+  "height": 2579,
+  "pixels": [
+    3149,
+    2579
+  ],
+  "projection": "EPSG:3857",
+  "northUp": true,
+  "license": "CC-BY-4.0",
+  "licenseEvidenceUrl": "https://basemap.at/#nutzungsbedingungen",
+  "bbox4326Requested": [
+    14.745471353015779,
+    47.21344497736256,
+    14.77924564698422,
+    47.23222702263744
+  ],
+  "tileTemplate": "https://maps.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg",
+  "tileRange": {
+    "zoom": 17,
+    "minX": 70904,
+    "maxX": 70916,
+    "minY": 45977,
+    "maxY": 45987
+  },
+  "metresPerPixel3857": 1.194328566955879,
+  "approximateGroundResolutionMeters": [
+    0.811118617895883,
+    0.811118617895883
+  ],
+  "modifications": "Bounded WMTS tile mosaic cropped to the environment extent and JPEG recompressed; embedded provider year labels preserved.",
+  "validation": {
+    "circuitOutlineSamples": 81,
+    "completeEnvironmentExtent": true,
+    "nonconstantImage": true
+  },
+  "bytes": 1379018,
+  "sha256": "6fa253ff24cdb0374e2ce5c0e78f04e00d4460216fc18012aa717f2254232e99",
+  "preparedWith": "python scripts/prepare-austria-orthophoto.py"
+}

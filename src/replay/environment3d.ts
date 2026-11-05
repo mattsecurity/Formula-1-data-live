@@ -185,6 +185,7 @@ export function buildEnvironment(data: EnvironmentData, ref: ReferencePath, cx: 
       const mesh=new THREE.Mesh(merged,materials[materialKey]);
       mesh.castShadow=['stone','glass','stand','roof','barrier'].includes(materialKey);mesh.receiveShadow=true;
       mesh.userData.circuitDetail=key.endsWith('Circuit')||key==='barrier'||key==='fence';
+      mesh.userData.environmentSurface=['road','water','green','forest'].includes(materialKey);
       group.add(mesh);
     }
   }

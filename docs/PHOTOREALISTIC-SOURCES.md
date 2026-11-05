@@ -1,5 +1,14 @@
 # Photorealistic 3D sources
 
+**Local asset implementation:** the explorer now includes an actual CC BY 4.0
+Melbourne photographic mesh sample (outside the racing line), a CC BY-SA 4.0
+Interlagos RGB survey point cloud covering the circuit, and five official
+photographic ground layers. See [bundled surveys](../public/surveys/README.md)
+and [orthophotos](../public/orthophotos/README.md). These are locally converted
+assets, separate from the still-empty remote 3D Tiles configuration below.
+They do not establish photographic coverage of all 25 circuits or calibrated
+survey heights for the racing replay.
+
 **5 November update:** see the [25-circuit acquisition audit](research/README.md)
 for actual model listings, checked coverage polygons, prices, downloaded survey
 samples and regional source reports. The Melbourne municipal index has now
