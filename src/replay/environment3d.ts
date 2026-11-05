@@ -141,9 +141,11 @@ export function buildEnvironment(data: EnvironmentData, ref: ReferencePath, cx: 
     } else {
       const geometry=new THREE.ShapeGeometry(shape);geometry.rotateX(-Math.PI/2);
       const pos=geometry.getAttribute('position');
-      for(let i=0;i<pos.count;i++) pos.setY(i,f.kind==='water'?base-0.35:heightAt(pos.getX(i),pos.getZ(i))-0.29);
-      geometry.computeVertexNormals();
       const forest = f.type === 'wood' || f.type === 'forest';
+      // OSM parks often contain separately mapped woodland and lakes. Keep each
+      // surface at a distinct depth so overlapping polygons do not flicker.
+      for(let i=0;i<pos.count;i++) pos.setY(i,f.kind==='water'?base-0.35:heightAt(pos.getX(i),pos.getZ(i))-(forest?0.45:0.5));
+      geometry.computeVertexNormals();
       buckets[f.kind==='water'?'water':forest?'forest':'green'].push(geometry);
       // Trees are inferred within mapped woodland only; not claimed as individual surveyed trees.
       if(forest && treePositions.length<3500) {

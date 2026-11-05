@@ -107,7 +107,7 @@ export default function Track3D({
     const ownedTextures: THREE.Texture[] = [];
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, alpha: true });
     } catch {
       setWebgl(false);
       return;

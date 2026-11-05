@@ -51,7 +51,7 @@ export default function CircuitExplorerPage() {
     setPhotoCredits([]);
     setWebgl(true);
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, powerPreference: 'high-performance' });
     } catch {
       setWebgl(false);
       return;
