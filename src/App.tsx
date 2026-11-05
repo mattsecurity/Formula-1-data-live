@@ -6,6 +6,7 @@ import { NavBar } from './ui/NavBar';
 import HomePage from './pages/HomePage';
 
 const SeasonPage = lazy(() => import('./pages/SeasonPage'));
+const CircuitExplorerPage = lazy(() => import('./pages/CircuitExplorerPage'));
 const MeetingPage = lazy(() => import('./pages/MeetingPage'));
 const DriversPage = lazy(() => import('./pages/DriversPage'));
 const StandingsPage = lazy(() => import('./pages/StandingsPage'));
@@ -23,7 +24,7 @@ function ScrollTop() {
 export default function App() {
   const location = useLocation();
   const { pathname } = location;
-  const immersive = pathname.startsWith('/replay') || pathname.startsWith('/lab');
+  const immersive = pathname.startsWith('/replay') || pathname.startsWith('/lab') || pathname.startsWith('/circuit');
   useEffect(() => {
     if (!immersive) document.title = 'Pitwall · F1 Replay';
   }, [immersive, pathname]);
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="/drivers/:year?" element={<Page><DriversPage /></Page>} />
             <Route path="/standings/:year?" element={<Page><StandingsPage /></Page>} />
             <Route path="/replay/:key" element={<Page plain><ReplayPage /></Page>} />
+            <Route path="/circuit/:id" element={<Page plain><CircuitExplorerPage /></Page>} />
             <Route path="/lab/:key" element={<Page plain><LapLabPage /></Page>} />
             <Route path="*" element={<Page><HomePage /></Page>} />
           </Routes>

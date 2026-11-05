@@ -64,6 +64,7 @@ function Hero() {
           <Link className="btn btn-secondary" to={`/replay/${DEMO_RACE_KEY}`}>
             Demo offline · Monza
           </Link>
+          <Link className="btn btn-secondary" to="/circuit/it-1922">Esplora i circuiti in 3D</Link>
         </motion.div>
       </div>
       <motion.figure className="hero-map" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, ease: EASE }}>

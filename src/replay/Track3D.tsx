@@ -9,55 +9,18 @@ import type { SessionData } from '../model/types';
 import { usePlayback } from './store';
 import { buildTrackGeo } from './trackArt';
 import { liveOrder } from './useStandings';
+import { createGeographicTerrain, type GeographicTerrainData } from '../model/geographicTerrain';
+import { loadPhotogrammetrySource } from '../data/scenerySources';
+import { photogrammetryPlacement } from './photogrammetryPlacement';
+import type { createPhotogrammetry } from './photogrammetry3d';
+import { makeCar } from './carModel3d';
+import { buildEnvironment, makeLandscape, surfaceMaterial, terrainSampler, type EnvironmentData } from './environment3d';
 import './track3d.css';
 
 export type CamMode = 'orbit' | 'chase' | 'top';
 
-const EXAG = 1.8; // vertical exaggeration so elevation changes read on screen
+const EXAG = 1; // preserve measured vertical scale
 const HALF_W = 7; // half track width, metres
-
-function makeCar(color: string): THREE.Group {
-  const g = new THREE.Group();
-  const paint = new THREE.MeshStandardMaterial({ color, metalness: 0.35, roughness: 0.35 });
-  const carbon = new THREE.MeshStandardMaterial({ color: 0x15151a, metalness: 0.2, roughness: 0.6 });
-  const tyre = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.9 });
-  const add = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number) => {
-    const m = new THREE.Mesh(geo, mat);
-    m.position.set(x, y, z);
-    g.add(m);
-    return m;
-  };
-  // car points along +X; Y up; Z sideways
-  add(new THREE.BoxGeometry(4.2, 0.42, 0.85), paint, -0.2, 0.42, 0); // monocoque & engine cover
-  add(new THREE.BoxGeometry(1.9, 0.4, 1.7), paint, -0.6, 0.36, 0); // sidepods
-  add(new THREE.BoxGeometry(1.5, 0.22, 0.3), paint, 2.45, 0.32, 0); // nose
-  add(new THREE.BoxGeometry(0.45, 0.06, 1.95), carbon, 3.15, 0.14, 0); // front wing
-  add(new THREE.BoxGeometry(0.42, 0.06, 1.15), paint, -2.6, 0.95, 0); // rear wing top
-  add(new THREE.BoxGeometry(0.5, 0.7, 0.06), carbon, -2.6, 0.62, 0.56); // endplates
-  add(new THREE.BoxGeometry(0.5, 0.7, 0.06), carbon, -2.6, 0.62, -0.56);
-  add(new THREE.BoxGeometry(5.4, 0.05, 1.5), carbon, -0.1, 0.08, 0); // floor
-  add(new THREE.SphereGeometry(0.17, 12, 10), new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.3 }), 0.55, 0.78, 0); // helmet
-  add(new THREE.TorusGeometry(0.34, 0.035, 6, 16, Math.PI), carbon, 0.75, 0.72, 0).rotation.set(0, Math.PI / 2, 0); // halo
-  const wheel = new THREE.CylinderGeometry(0.36, 0.36, 0.38, 18);
-  for (const [x, z] of [
-    [1.75, 0.82],
-    [1.75, -0.82],
-    [-1.75, 0.86],
-    [-1.75, -0.86],
-  ]) {
-    const w = add(wheel, tyre, x, 0.36, z);
-    w.rotation.x = Math.PI / 2;
-  }
-  // soft contact shadow
-  const sh = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.2, 2.6),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false }),
-  );
-  sh.rotation.x = -Math.PI / 2;
-  sh.position.y = 0.02;
-  g.add(sh);
-  return g;
-}
 
 function checkerTexture(): THREE.Texture {
   const c = document.createElement('canvas');
@@ -125,9 +88,23 @@ export default function Track3D({
   const modeRef = useRef(mode);
   modeRef.current = mode;
   const [webgl, setWebgl] = useState(true);
+  const [photoCredits, setPhotoCredits] = useState<string[]>([]);
+  const [surroundings, setSurroundings] = useState(true);
+  const surroundingsRef = useRef(surroundings);
+  surroundingsRef.current = surroundings;
+  const [environmentStatus, setEnvironmentStatus] = useState('Caricamento ambiente…');
 
   useEffect(() => {
     const host = hostRef.current!;
+    let disposed = false;
+    let photogrammetry: ReturnType<typeof createPhotogrammetry> | null = null;
+    setPhotoCredits([]);
+    let environmentGroup: THREE.Group | null = null;
+    let lastSurroundings: boolean | null = null;
+    const abort = new AbortController();
+    setWebgl(true);
+    setEnvironmentStatus('Caricamento ambiente…');
+    const ownedTextures: THREE.Texture[] = [];
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -169,17 +146,31 @@ export default function Track3D({
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMappingExposure = 0.9;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     host.appendChild(renderer.domElement);
     const labels = new CSS2DRenderer();
     labels.domElement.className = 't3d-labels';
     host.appendChild(labels.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x07070a, extent * 2.2, extent * 6);
-    scene.add(new THREE.HemisphereLight(0xd8e2ff, 0x18181e, 1.6));
-    const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+    const skyColor = 0xb7ccd9;
+    scene.background = new THREE.Color(skyColor);
+    scene.fog = new THREE.Fog(skyColor, extent * 3, extent * 9);
+    scene.add(new THREE.HemisphereLight(0xcfe7ff, 0x6c7655, 1.5));
+    const sun = new THREE.DirectionalLight(0xffecd1, 2.6);
     sun.position.set(extent * 0.4, extent, extent * 0.3);
-    scene.add(sun);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = extent * 5;
+    sun.shadow.camera.left = sun.shadow.camera.bottom = -extent * 1.4;
+    sun.shadow.camera.right = sun.shadow.camera.top = extent * 1.4;
+    sun.shadow.normalBias = 0.4;
+    sun.shadow.bias = -0.0001;
+    scene.add(sun, sun.target);
+    const sunOffset = sun.position.clone();
 
     const camera = new THREE.PerspectiveCamera(42, 1, 0.5, extent * 20);
     // start from the same orientation as the 2D map
@@ -203,27 +194,70 @@ export default function Track3D({
     controls.maxDistance = extent * 4;
     controls.target.set(0, 0, 0);
 
-    // ground
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(extent * 3, 64), new THREE.MeshStandardMaterial({ color: 0x0b0b0e, roughness: 1 }));
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -1.2;
-    scene.add(ground);
-    const grid = new THREE.GridHelper(extent * 6, Math.round((extent * 6) / 100), 0x1d1d24, 0x141419);
-    grid.position.y = -1.15;
-    scene.add(grid);
+    let heightAt = terrainSampler(ref, cx, cy, zmin);
+    let landscape = makeLandscape(extent, data.circuitId, heightAt, renderer);
+    scene.add(landscape.mesh);
+    ownedTextures.push(...landscape.textures);
+    if (data.circuitId) {
+      Promise.all([
+        fetch(`${import.meta.env.BASE_URL}environments/${data.circuitId}.json`, { signal: abort.signal })
+          .then(response => { if (!response.ok) throw new Error('missing'); return response.json() as Promise<EnvironmentData>; }),
+        fetch(`${import.meta.env.BASE_URL}terrain/${data.circuitId}.json`, { signal: abort.signal })
+          .then(response => response.ok ? response.json() as Promise<GeographicTerrainData> : null).catch(() => null),
+      ])
+        .then(([environment, terrain]) => {
+          if (disposed) return;
+          if (environment.version !== 1 || environment.circuitId !== data.circuitId) throw new Error('invalid');
+          // Urban DEM surface models include rooftop heights; do not grow buildings on top of those roofs.
+          if (terrain && ref.z && !['sg-2008','mc-1929','az-2016','us-2023'].includes(data.circuitId || '')) {
+            const geographic = createGeographicTerrain(terrain, ref, cx, cy, zmin);
+            if (geographic) {
+              heightAt = geographic.heightAt;
+              scene.remove(landscape.mesh);landscape.mesh.geometry.dispose();landscape.mesh.material.dispose();
+              landscape = makeLandscape(extent, data.circuitId, heightAt, renderer);
+              ownedTextures.push(...landscape.textures);scene.add(landscape.mesh);lastSurroundings=null;
+            }
+          }
+          const built = buildEnvironment(environment, ref, cx, cy, heightAt);
+          if (built.group) {
+            environmentGroup = built.group;
+            lastSurroundings = null;
+            scene.add(built.group);
+            setEnvironmentStatus(`Ambiente OSM · ${built.buildings} edifici · ${built.estimated} altezze stimate`);
+            loadPhotogrammetrySource(data.circuitId!, abort.signal).then(async source => {
+              if(disposed || !source)return;
+              const placement=photogrammetryPlacement(environment.outline,ref,cx,cy);
+              if(!placement)return;
+              const module=await import('./photogrammetry3d');
+              if(disposed)return;
+              photogrammetry=module.createPhotogrammetry({url:source.url,origin:environment.origin,altitude:source.originAltitude,camera,renderer,
+                onStatus:message=>{if(!disposed)setEnvironmentStatus(message);},
+                onAttribution:credits=>{if(!disposed)setPhotoCredits([source.attribution,...credits]);},
+              });
+              photogrammetry.group.applyMatrix4(placement);scene.add(photogrammetry.group);lastSurroundings=null;
+            }).catch(()=>{if(!disposed)setEnvironmentStatus('Rilievo fotografico non disponibile · schema geografico');});
+
+          } else setEnvironmentStatus('Ambiente non allineato a questa versione del tracciato');
+        })
+        .catch(() => { if (!disposed) setEnvironmentStatus('Dati ambiente non disponibili · solo terreno indicativo'); });
+    } else setEnvironmentStatus('Circuito senza dati geografici · terreno indicativo');
 
     // ---------- track ribbon (+ skirts)
     const ribbon = (off0: number, off1: number, from: number, to: number, lift = 0) => {
       const pos: number[] = [];
       const idx: number[] = [];
+      const uv: number[] = [];
+      let distance = 0;
       let k = 0;
       for (let i = from; i <= to; i++) {
         const j = ((i % n) + n) % n;
         const y = vertY(j) + lift;
+        if (i > from) { const prev = ((i-1)%n+n)%n; distance += Math.hypot(ref.x[j]-ref.x[prev],ref.y[j]-ref.y[prev])/upm; }
         for (const off of [off0, off1]) {
           const x = ref.x[j] + geo.nx[j] * off * upm;
           const yy = ref.y[j] + geo.ny[j] * off * upm;
           pos.push((x - cx) / upm, y, -(yy - cy) / upm);
+          uv.push(off, distance);
         }
         if (i > from) idx.push(k - 2, k - 1, k, k - 1, k + 1, k);
         k += 2;
@@ -231,30 +265,22 @@ export default function Track3D({
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
       g.setIndex(idx);
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
       g.computeVertexNormals();
       return g;
     };
-    const asphalt = new THREE.Mesh(ribbon(HALF_W, -HALF_W, 0, n), new THREE.MeshStandardMaterial({ color: 0x3b3b45, roughness: 0.88, side: THREE.DoubleSide }));
+    const asphaltSurface = surfaceMaterial('asphalt_02', 3, renderer, 0xa6a6a6);
+    ownedTextures.push(...asphaltSurface.textures);
+    const asphalt = new THREE.Mesh(ribbon(HALF_W, -HALF_W, 0, n), asphaltSurface.material);
+    asphalt.receiveShadow = true;
     scene.add(asphalt);
-    // skirts down to the ground make the elevation readable
-    for (const side of [HALF_W, -HALF_W]) {
-      const pos: number[] = [];
-      const idx: number[] = [];
-      for (let i = 0; i <= n; i++) {
-        const j = i % n;
-        const x = (ref.x[j] + geo.nx[j] * side * upm - cx) / upm;
-        const z = -(ref.y[j] + geo.ny[j] * side * upm - cy) / upm;
-        pos.push(x, vertY(j), z, x, -1.2, z);
-        if (i > 0) {
-          const k = i * 2;
-          idx.push(k - 2, k - 1, k, k - 1, k + 1, k);
-        }
-      }
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      g.setIndex(idx);
-      g.computeVertexNormals();
-      scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x141418, roughness: 1, side: THREE.DoubleSide })));
+    // A narrow verge follows measured track elevation, hiding terrain-grid interpolation seams.
+    const vergeAsset = ['bh-2002','sa-2021','qa-2004','ae-2009'].includes(data.circuitId || '') ? 'aerial_beach_01' : ['sg-2008','mc-1929','az-2016','us-2023'].includes(data.circuitId || '') ? 'asphalt_02' : 'aerial_grass_rock';
+    const verge = surfaceMaterial(vergeAsset, vergeAsset === 'asphalt_02' ? 3 : 12, renderer, vergeAsset === 'aerial_grass_rock' ? 0x548b61 : 0xffffff);
+    ownedTextures.push(...verge.textures);
+    for (const side of [1,-1]) {
+      const mesh = new THREE.Mesh(ribbon(side * HALF_W, side * (HALF_W+4), 0, n, -0.08), verge.material);
+      mesh.receiveShadow = true; scene.add(mesh);
     }
     // white edge lines
     for (const side of [HALF_W - 0.3, -HALF_W + 0.3]) {
@@ -325,9 +351,23 @@ export default function Track3D({
         v.y = vertY(best) + 0.05;
         pts.push(v);
       }
-      const pit = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0x0a84ff, dashSize: 3, gapSize: 3 }));
-      pit.computeLineDistances();
-      scene.add(pit);
+      const vertices: number[] = [];
+      const uv: number[] = [];
+      const indices: number[] = [];
+      let length = 0;
+      for (let i=0; i<pts.length; i++) {
+        const direction = pts[Math.min(pts.length-1,i+1)].clone().sub(pts[Math.max(0,i-1)]).normalize();
+        const normal = new THREE.Vector3(-direction.z,0,direction.x).multiplyScalar(2.8);
+        if (i) length += pts[i].distanceTo(pts[i-1]);
+        for (const side of [-1,1]) { const p=pts[i].clone().addScaledVector(normal,side); vertices.push(p.x,p.y,p.z); uv.push(side*2.8,length); }
+        if (i) {const k=i*2;indices.push(k-2,k-1,k,k-1,k+1,k);}
+      }
+      const pavement = new THREE.BufferGeometry();
+      pavement.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+      pavement.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+      pavement.setIndex(indices);pavement.computeVertexNormals();
+      const pit = new THREE.Mesh(pavement,asphaltSurface.material);
+      pit.receiveShadow=true;scene.add(pit);
     }
     // corners
     for (const c of geo.corners) {
@@ -466,7 +506,7 @@ export default function Track3D({
         if (ok) break;
       }
       controls.maxDistance = Math.max(extent * 4, homeDist * 1.5);
-      scene.fog = new THREE.Fog(0x07070a, homeDist * 1.2, homeDist * 3.2);
+      scene.fog = new THREE.Fog(skyColor, homeDist * 2, homeDist * 5);
       home();
     };
     fitHome();
@@ -488,15 +528,30 @@ export default function Track3D({
       const q = carAt(tr, t - 0.35);
       const dx = q ? p.x - q.x : 1;
       const dy = q ? p.y - q.y : 0;
-      return { p, ang: Math.atan2(dy, dx), moving: !!q && Math.hypot(dx, dy) > 0.5 };
+      const moving = !!q && Math.hypot(dx, dy) > 0.5;
+      const fraction = ((distanceAt(tr,t) % 1) + 1) % 1;
+      const index = Math.floor(fraction*n)%n;
+      const before = (index+n-1)%n, after = (index+1)%n;
+      const tangent = Math.atan2(ref.y[after]-ref.y[before],ref.x[after]-ref.x[before]);
+      return { p, ang: moving ? Math.atan2(dy, dx) : tangent, moving };
     };
     const loop = () => {
       raf = requestAnimationFrame(loop);
+      const showSurroundings = surroundingsRef.current;
+      if (showSurroundings !== lastSurroundings) {
+        landscape.mesh.visible = showSurroundings && !photogrammetry;
+        if (environmentGroup) for (const child of environmentGroup.children) child.visible = !photogrammetry && showSurroundings || !showSurroundings && !!child.userData.circuitDetail;
+        lastSurroundings = showSurroundings;
+      }
       const st = usePlayback.getState();
       const t = st.t;
       const now = performance.now();
       const m = modeRef.current;
       if (m !== lastMode) {
+        const shadowExtent = m === 'chase' ? 90 : extent * 1.4;
+        sun.shadow.camera.left = sun.shadow.camera.bottom = -shadowExtent;
+        sun.shadow.camera.right = sun.shadow.camera.top = shadowExtent;
+        sun.shadow.camera.updateProjectionMatrix();
         controls.enabled = m !== 'chase';
         if (m === 'top') {
           camera.position.set(Math.sin(phi) * 0.01, extent * 2.6, Math.cos(phi) * 0.01);
@@ -513,8 +568,8 @@ export default function Track3D({
         lastMode = m;
       }
 
-      const dist = camera.position.distanceTo(controls.target);
-      const carScale = m === 'chase' ? 1 : Math.max(1, Math.min(7, dist / 110));
+      // Keep cars at physical size; broadcast labels remain readable from orbit.
+      const carScale = 1;
       const sel = new Set(st.selected);
       const lead = leaderNum(data, t);
       for (const d of data.drivers) {
@@ -529,8 +584,10 @@ export default function Track3D({
         const frac = distanceAt(tr, t);
         c.g.visible = true;
         c.g.position.copy(toV(p.x, p.y, elevAt(frac) + 0.02));
-        c.g.rotation.y = ang;
-        c.g.scale.setScalar(carScale * (sel.has(d.num) ? 1.15 : 1));
+        const slopeStep = 3 / Math.max(1, ref.lengthM);
+        const pitch = Math.atan2(elevAt(frac + slopeStep) - elevAt(frac - slopeStep), 6);
+        c.g.rotation.set(0, ang, Math.max(-0.35, Math.min(0.35, pitch)), 'YXZ');
+        c.g.scale.setScalar(carScale);
         const pos = liveOrder.get(d.num);
         const el = c.tag.element as HTMLElement;
         const txt = st.showNames ? `${pos != null ? `${pos} ` : ''}${d.code}` : '';
@@ -613,24 +670,37 @@ export default function Track3D({
         fitHome();
         controls.target.set(0, 0, 0);
       }
+      sun.target.position.set(m === 'chase' ? chaseLook.x : 0, m === 'chase' ? chaseLook.y : 0, m === 'chase' ? chaseLook.z : 0);
+      sun.position.copy(sun.target.position).add(sunOffset);
+      if(photogrammetry){photogrammetry.group.visible=showSurroundings;if(showSurroundings)photogrammetry.update();}
       renderer.render(scene, camera);
       labels.render(scene, camera);
     };
     raf = requestAnimationFrame(loop);
 
     return () => {
+      disposed = true;
+      abort.abort();
       cancelAnimationFrame(raf);
       ro.disconnect();
+      if(photogrammetry){scene.remove(photogrammetry.group);photogrammetry.dispose();}
       labels.domElement.removeEventListener('pointerdown', onDown);
       labels.domElement.removeEventListener('pointerup', onUp);
       controls.dispose();
+      const textureSet = new Set(ownedTextures);
       scene.traverse((o) => {
+        if (o instanceof THREE.InstancedMesh) o.dispose();
         const mesh = o as THREE.Mesh;
         mesh.geometry?.dispose?.();
         const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
-        if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
-        else mat?.dispose?.();
+        const materials = Array.isArray(mat) ? mat : mat ? [mat] : [];
+        for (const material of materials) {
+          for (const value of Object.values(material)) if (value instanceof THREE.Texture) textureSet.add(value);
+          material.dispose();
+        }
       });
+      textureSet.forEach(texture => texture.dispose());
+      sun.shadow.dispose();
       renderer.dispose();
       host.innerHTML = '';
     };
@@ -640,6 +710,19 @@ export default function Track3D({
     <div className="t3d">
       <div ref={hostRef} className="t3d-host" />
       {!webgl && <p className="t3d-err">Il tuo browser non supporta WebGL: la vista 3D non è disponibile.</p>}
+      <div className="t3d-environment glass" role="group" aria-label="Contesto del circuito">
+        <button aria-pressed={surroundings} onClick={() => setSurroundings(true)}>Ambiente completo</button>
+        <button aria-pressed={!surroundings} onClick={() => setSurroundings(false)}>Solo autodromo</button>
+      </div>
+      {photoCredits.length>0 && <div className="t3d-photo-credits">{photoCredits.join(' · ')}</div>}
+      <details className="t3d-source glass">
+        <summary>{photoCredits.length ? 'Fonti del rilievo 3D' : 'Schema geografico 3D'}</summary>
+        <p>{environmentStatus}</p>
+        <p>Sagome geografiche reali; facciate, vegetazione e rilievo circostante sono ricostruzioni indicative. Le strutture temporanee possono mancare.</p>
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors · ODbL</a>
+        <span> · </span><a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noreferrer">Quote · fonti Tilezen</a>
+        <span> · </span><a href="https://polyhaven.com" target="_blank" rel="noreferrer">Texture Poly Haven · CC0</a>
+      </details>
       <div className="t3d-cams glass" role="group" aria-label="Inquadratura 3D">
         {(
           [

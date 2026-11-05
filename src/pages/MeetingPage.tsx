@@ -152,6 +152,7 @@ export default function MeetingPage() {
           )
         )}
       </section>
+      {circuit && <Link className="btn btn-secondary" to={`/circuit/${circuit.id}`} style={{ marginBottom: 24 }}>Esplora circuito e dintorni in 3D</Link>}
 
       <section style={{ marginTop: 36 }}>
         <h2 className="title-md">Sessioni</h2>
